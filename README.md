@@ -7,37 +7,95 @@ MSA 환경에서 사용할 JWT 기반 인증 서버입니다.
 
 ## 구현 방향 개요
 
-현재는 빠른 배포를 위해 회원 기능과 인증 기능을 하나의 서비스에서 제공하되, 나중에 `auth-service`로 분리할 가능성과 게이트웨이 도입을 고려해 
+현재는 빠른 배포를 위해 회원 기능과 인증 기능을 하나의 서비스에서 제공하되, 나중에 `auth-service`로 분리할 가능성과 게이트웨이 도입을 고려해
 DDD를 기반으로 `user`, `auth` 패키지를 독립적으로 구성하여 기능 구현을 진행합니다.
+
+### 패키지 구조
+
+<details>
+
+<summary>패키지 구조 상세(구현 과정에서 다소 변경될 가능성 존재)</summary>
+
+```
+src/main/java/com/example/userservice/
+├── auth/                               # 나중에 auth-service로 분리
+│   ├── presentation/
+│   │   └── AuthController.java
+│   │       # POST /api/v1/auth/login
+│   │       # POST /api/v1/auth/logout
+│   │       # POST /api/v1/auth/reissue
+│   │       # POST /api/v1/auth/verify  <- 게이트웨이 도입 시 제거
+│   ├── application/
+│   │   ├── AuthService.java
+│   │   └── dto/
+│   ├── domain/
+│   │   ├── JwtTokenProvider.java       # 도메인 서비스 인터페이스
+│   │   ├── TokenRepository.java        # 포트 (인터페이스)
+│   │   └── vo/
+│   │       └── TokenPair.java          # accessToken + refreshToken VO
+│   └── infrastructure/
+│       ├── JwtTokenProviderImpl.java   # JwtTokenProvider 구현체 (jjwt)
+│       ├── RedisTokenRepository.java   # TokenRepository 구현체 (Redis)
+│       ├── UserDetailsServiceImpl.java # UserDetailsService 구현체
+│       │   # 현재: UserRepository 직접 조회
+│       │   # 분리 후: UserFeignClient로 교체
+│       ├── UserDetailsImpl.java        # UserDetails 구현체
+│       └── JwtProperties.java
+│
+├── user/                               # 회원 도메인
+│   ├── presentation/
+│   │   └── UserController.java
+│   │       # POST /api/v1/users/signup
+│   ├── application/
+│   │   ├── UserService.java
+│   │   └── dto/
+│   ├── domain/
+│   │   ├── User.java                   # 애그리거트 루트
+│   │   ├── UserRole.java               # enum VO
+│   │   └── UserRepository.java         # 포트 (인터페이스)
+│   └── infrastructure/
+│       └── UserRepositoryImpl.java     # UserRepository 구현체 (JPA)
+│
+└── global/
+    ├── config/
+    │   └── SecurityConfig.java
+    ├── filter/
+    │   └── JwtAuthenticationFilter.java  # 게이트웨이 도입 시 Gateway로 이전
+    ├── security/
+    │   └── JwtAuthenticationEntryPoint.java
+    └── exception/
+        └── GlobalExceptionHandler.java
+```
+
+</details>
 
 ### 향후 확장 방향
 
 ```
 현재
 user-service (auth + user 통합)
+클라이언트 -> user-service (로그인, JWT 발급)
+다른 MSA 서비스 -> POST /api/v1/auth/verify 호출로 검증 위임
 
 auth-service 분리 시
-auth/infrastructure/UserReaderImpl -> UserFeignClient로 교체만 하면 됨
+auth/infrastructure/UserDetailsServiceImpl
+    -> UserFeignClient로 교체 (user-service HTTP 호출)
 
 게이트웨이 도입 시
-1. JwtAuthenticationFilter -> Gateway로 이전
-   Gateway가 JWT 검증 + 블랙리스트 확인 후 헤더 변환
-   Authorization: Bearer {token}
-       -> X-User-Id: uuid
-       -> X-User-Role: ROLE_USER
-       -> ...
+1. 인증 흐름 변경
+   클라이언트 -> Gateway (JWT 검증 + 블랙리스트 확인)
+       -> X-User-Id, X-User-Role 헤더로 변환 후 각 MSA 서비스로 전달
+   JWT 검증은 Gateway에서만 수행 (각 MSA 서비스는 헤더만 신뢰)
 
-2. 각 MSA 서비스 컨트롤러 교체
-   @AuthenticationPrincipal UUID userId
-       -> @RequestHeader("X-User-Id") UUID userId
+2. JwtAuthenticationFilter -> Gateway로 이전
+   (예시) 각 MSA 서비스: @AuthenticationPrincipal -> @RequestHeader("X-User-Id") 교체
 
-3. 보안 — MSA 서비스는 Gateway를 통해서만 접근 가능하도록
+3. POST /api/v1/auth/verify 제거
+   Gateway가 JWT 검증을 대신하므로 불필요해짐
+
+4. 보안 — MSA 서비스는 Gateway를 통해서만 접근 가능하도록
    외부 포트 바인딩 제거, 내부 네트워크만 허용
-   (외부에서 X-User-Id 헤더 직접 조작한 인증 우회 방지)
-
-4. GET /api/v1/auth/verify 제거
-   현재는 게이트웨이가 없어 다른 MSA 서비스가 직접 호출하는 임시 엔드포인트
-   게이트웨이 도입 시 Gateway가 JWT 검증을 대신하므로 불필요해짐
+   (외부에서 X-User-Id 헤더 직접 조작을 통한 인증 우회 방지)
 ```
 
 ---
@@ -114,11 +172,11 @@ docker compose up
 
 ## 컨테이너 구성
 
-| 서비스 | 이미지 | 포트    | 설명 |
-|--------|--------|-------|------|
-| user-service | 로컬 빌드 | 18099 | 인증 서버 |
-| db | postgres:16 | 5432  | PostgreSQL |
-| redis | redis:7.2 | 6379  | RefreshToken 저장소 |
+| 서비스          | 이미지         | 포트    | 설명               |
+|--------------|-------------|-------|------------------|
+| user-service | 로컬 빌드       | 18099 | 인증 서버            |
+| db           | postgres:16 | 5432  | PostgreSQL       |
+| redis        | redis:7.2   | 6379  | RefreshToken 저장소 |
 
 ---
 
