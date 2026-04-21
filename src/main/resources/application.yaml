@@ -1,0 +1,31 @@
+spring:
+  application:
+    name: user-service
+
+  datasource:
+    url: ${DB_URL:jdbc:postgresql://localhost:5432/userdb}
+    username: ${DB_USERNAME:postgres}
+    password: ${DB_PASSWORD:postgres}
+    driver-class-name: org.postgresql.Driver
+
+  jpa:
+    hibernate:
+      ddl-auto: validate        # 운영: validate / 개발 초기: create
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+        format_sql: true
+    show-sql: false             # 운영: false / 개발 중: true
+
+  data:
+    redis:
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
+
+jwt:
+  secret: ${JWT_SECRET}           # 기본값 없음 — 반드시 환경변수로 주입
+  access-token-expiration: ${JWT_ACCESS_EXPIRATION:1800000}   # 30분 (ms)
+  refresh-token-expiration: ${JWT_REFRESH_EXPIRATION:604800000} # 7일 (ms)
+
+server:
+  port: ${SERVER_PORT:18099}
