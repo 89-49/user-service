@@ -1,0 +1,30 @@
+package org.pgsg.user_service.user.presentation.dto;
+
+import org.pgsg.user_service.user.application.dto.ChatTimeRangeInfo;
+import org.pgsg.user_service.user.application.dto.UserDetailInfo;
+import org.pgsg.user_service.user.domain.entity.UserRole;
+
+import java.util.List;
+import java.util.UUID;
+
+public record UserDetailResponse(
+		UUID userId,
+		String username,
+		String name,
+		String nickname,
+		UserRole userRole,
+		List<ChatTimeRangeInfo> chatTimeRange
+		// TODO: 공통모듈 배포 이후 응답 데이터에 BaseEntity의 Auditing 필드 추가
+) {
+	public static UserDetailResponse from(UserDetailInfo userDetailInfo) {
+		return new UserDetailResponse(
+				userDetailInfo.userId(),
+				userDetailInfo.username(),
+				userDetailInfo.name(),
+				userDetailInfo.nickname(),
+				userDetailInfo.userRole(),
+				userDetailInfo.chatTimeRange()
+				// TODO: 공통모듈 배포 이후 응답 데이터에 BaseEntity의 Auditing 필드 추가
+		);
+	}
+}

@@ -1,11 +1,12 @@
 package org.pgsg.user_service.user.application.dto;
 
+import org.pgsg.user_service.user.domain.entity.ChatTimeRange;
 import org.pgsg.user_service.user.domain.entity.User;
 import org.pgsg.user_service.user.domain.entity.UserRole;
 
+import java.util.List;
 import java.util.UUID;
 
-// 인증
 public record UserDetailInfo(
 		UUID userId,
 		String username,
@@ -13,8 +14,16 @@ public record UserDetailInfo(
 		UserRole userRole,
 		String name,
 		String nickname,
-		boolean isEnabled
+		boolean isEnabled,
+		List<ChatTimeRangeInfo> chatTimeRange
+		// TODO: 공통모듈 배포 이후 응답 데이터에 BaseEntity의 Auditing 필드 추가
 ) {
+	public static List<ChatTimeRangeInfo> getChatTimeRangeInfos(List<ChatTimeRange> chatTimeRanges) {
+		return chatTimeRanges.stream()
+				.map(ChatTimeRangeInfo::from)
+				.toList();
+	}
+
 	// User 엔티티 -> UserDetailInfo DTO
 	public static UserDetailInfo from(User user) {
 		return new UserDetailInfo(
@@ -24,7 +33,8 @@ public record UserDetailInfo(
 				user.getUserRole(),
 				user.getName(),
 				user.getNickname(),
-				user.isEnabled()
+				user.isEnabled(),
+				getChatTimeRangeInfos(user.getChatTimeRange())
 		);
 	}
 }
