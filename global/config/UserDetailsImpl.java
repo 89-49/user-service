@@ -8,6 +8,7 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.util.StringUtils;
 
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.UUID;
@@ -24,7 +25,7 @@ public class UserDetailsImpl implements UserDetails {
     private final boolean enabled;
 
     @Builder
-    public UserDetailsImpl(UUID uuid, String username, String password, String userRole, String name, , boolean enabled) {
+    public UserDetailsImpl(UUID uuid, String username, String password, String userRole, String name, boolean enabled) {
         this.uuid = uuid;
         this.username = username;
         this.password = password;
@@ -41,7 +42,7 @@ public class UserDetailsImpl implements UserDetails {
         }
 
         // 권한이 콤마(,)로 구분된 여러 개일 경우를 대비한 로직 (단일 권한이어도 작동함)
-        return List.of(userRole.split(",")).stream()
+        return Arrays.stream(userRole.split(","))
                 .map(String::trim)
                 .filter(StringUtils::hasText)
                 .map(SimpleGrantedAuthority::new)
