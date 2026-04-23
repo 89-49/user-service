@@ -33,7 +33,11 @@ public class SecurityConfigImpl implements SecurityConfig {
                 .sessionManagement(c -> c.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .addFilterBefore(loginFilter, UsernamePasswordAuthenticationFilter.class)
                 .authorizeHttpRequests(authorize -> authorize
-                        .anyRequest().permitAll()
+                        // Explicitly permit public endpoints
+                        .requestMatchers("/favicon.ico", "/error").permitAll()
+                        .requestMatchers("/actuator/health", "/actuator/info").permitAll()
+                        // All other requests require authentication
+                        .anyRequest().authenticated()
                 )
                 .exceptionHandling(c -> {
                     // 401 Unauthorized 처리

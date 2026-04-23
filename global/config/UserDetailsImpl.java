@@ -14,7 +14,7 @@ import java.util.List;
 import java.util.UUID;
 
 @Getter
-@ToString
+@ToString(exclude = "password")
 public class UserDetailsImpl implements UserDetails {
 
     private final UUID uuid;          // 회원 고유 ID

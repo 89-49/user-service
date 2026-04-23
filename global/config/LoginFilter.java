@@ -60,6 +60,16 @@ public class LoginFilter extends OncePerRequestFilter {
     }
 
     private void doLogin(HttpServletRequest request) {
+        // Trust boundary verification: Check if request comes from trusted gateway
+        // In production, verify signed header/JWT or restrict to trusted proxy IPs
+        String gatewaySignature = request.getHeader("X-Gateway-Signature");
+        if (!StringUtils.hasText(gatewaySignature)) {
+            log.warn("[LoginFilter] Missing gateway signature - rejecting request from untrusted source");
+            throw new SecurityException("Request must come from trusted gateway");
+        }
+        // TODO: Implement actual signature verification (HMAC, JWT, or IP whitelist check)
+        // For now, we fail closed if the signature header is missing
+
         String userIdHeader = request.getHeader(HEADER_USER_ID);
         String usernameHeader = request.getHeader(HEADER_USERNAME);
 
