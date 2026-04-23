@@ -21,9 +21,10 @@ src/main/java/com/example/userservice/
 ├── auth/                               # 나중에 auth-service로 분리
 │   ├── presentation/
 │   │   └── AuthController.java
-│   │       # POST /api/v1/auth/login
-│   │       # POST /api/v1/auth/logout
-│   │       # POST /api/v1/auth/reissue
+|   |       # POST /api/v1/auth 회원가입
+│   │       # POST /api/v1/auth/login 로그인
+│   │       # POST /api/v1/auth/logout 로그아웃
+│   │       # POST /api/v1/auth/reissue 토큰 재발급
 │   │       # POST /api/v1/auth/verify  <- 게이트웨이 도입 시 제거
 │   ├── application/
 │   │   ├── AuthService.java
