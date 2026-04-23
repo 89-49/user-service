@@ -11,7 +11,7 @@ public interface JwtTokenProvider {
     TokenPair createTokenPair(UUID userId, UserRole role);
 
     // 토큰에서 사용자 식별값(Subject) 추출
-    String getUserId(String token);
+    UUID getUserId(String token);
 
     // 토큰 유효성 및 만료 여부 확인
     boolean validateToken(String token);
