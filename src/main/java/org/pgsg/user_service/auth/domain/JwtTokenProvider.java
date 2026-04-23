@@ -17,5 +17,5 @@ public interface JwtTokenProvider {
     boolean validateToken(String token);
 
     // 만료된 토큰에서도 클레임을 추출 (재발급 로직용)
-    String getUserIdFromExpiredToken(String token);
+    String getSubjectFromExpiredAccessToken(String accessToken);
 }
