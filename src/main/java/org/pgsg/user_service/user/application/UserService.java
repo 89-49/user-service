@@ -5,6 +5,7 @@ import org.pgsg.user_service.user.application.dto.UserDetailInfo;
 import org.pgsg.user_service.user.domain.entity.User;
 import org.pgsg.user_service.user.domain.repository.UserRepository;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.UUID;
 
@@ -14,6 +15,7 @@ public class UserService {
 
 	private final UserRepository userRepository;
 
+	@Transactional(readOnly = true)
 	public UserDetailInfo getUser(UUID userId) {
 		User user = userRepository.findById(userId)
 				// TODO: 회원 도메인용 커스텀 예외 클래스로 대체
@@ -22,6 +24,7 @@ public class UserService {
 		return UserDetailInfo.from(user);
 	}
 
+	@Transactional(readOnly = true)
 	public UserDetailInfo getUser(String username) {
 		User user = userRepository.findByUsername(username)
 				// TODO: 회원 도메인용 커스텀 예외 클래스로 대체
