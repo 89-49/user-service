@@ -1,6 +1,6 @@
 package org.pgsg.user_service.user.presentation.dto;
 
-import org.pgsg.user_service.user.application.dto.UserDetailInfo;
+import org.pgsg.user_service.user.application.dto.LoginUserDetailInfo;
 import org.pgsg.user_service.user.domain.entity.UserRole;
 
 import java.util.UUID;
@@ -9,14 +9,14 @@ import java.util.UUID;
 public record LoginUserResponse(
 		UUID userId,
 		String username,
-		String password,	// 이미 BCrypt에 의해 암호화된 비밀번호를 반환
+		String password,	// 이미 BCrypt에 의해 암호화된 비밀번호
 		UserRole userRole,
 		String name,
 		String nickname,
 		boolean isEnabled
 ) {
 	// application 계층 UserDetailsInfo -> presentation 계층 GetDetailsResponse 로 변환
-	public static LoginUserResponse from(UserDetailInfo userDetailInfo) {
+	public static LoginUserResponse from(LoginUserDetailInfo userDetailInfo) {
 		return new LoginUserResponse(
 				userDetailInfo.userId(),
 				userDetailInfo.username(),

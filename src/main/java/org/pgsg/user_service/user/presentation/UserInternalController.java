@@ -2,7 +2,7 @@ package org.pgsg.user_service.user.presentation;
 
 import lombok.RequiredArgsConstructor;
 import org.pgsg.user_service.user.application.UserService;
-import org.pgsg.user_service.user.application.dto.UserDetailInfo;
+import org.pgsg.user_service.user.application.dto.LoginUserDetailInfo;
 import org.pgsg.user_service.user.presentation.dto.LoginUserResponse;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -18,7 +18,7 @@ public class UserInternalController {
 
 	@GetMapping("/{username}")
 	public LoginUserResponse getUser(@PathVariable("username") String username) {
-		UserDetailInfo userDetailInfo = userService.getUser(username);
+		LoginUserDetailInfo userDetailInfo = userService.getUser(username);
 
 		return LoginUserResponse.from(userDetailInfo);
 	}

@@ -5,21 +5,24 @@ import org.pgsg.user_service.user.domain.entity.User;
 import org.pgsg.user_service.user.domain.entity.UserRole;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.UUID;
 
 public record UserDetailInfo(
 		UUID userId,
 		String username,
-		String password,
 		UserRole userRole,
 		String name,
 		String nickname,
-		boolean isEnabled,
 		List<ChatTimeRangeInfo> chatTimeRange
 		// TODO: 공통모듈 배포 이후 응답 데이터에 BaseEntity의 Auditing 필드 추가
 ) {
 	public static List<ChatTimeRangeInfo> getChatTimeRangeInfos(List<ChatTimeRange> chatTimeRanges) {
+		if (chatTimeRanges == null || chatTimeRanges.isEmpty()) {
+			return List.of();
+		}
 		return chatTimeRanges.stream()
+				.filter(Objects::nonNull)
 				.map(ChatTimeRangeInfo::from)
 				.toList();
 	}
@@ -29,11 +32,9 @@ public record UserDetailInfo(
 		return new UserDetailInfo(
 				user.getUserId(),
 				user.getUsername(),
-				user.getPassword(),
 				user.getUserRole(),
 				user.getName(),
 				user.getNickname(),
-				user.isEnabled(),
 				getChatTimeRangeInfos(user.getChatTimeRange())
 		);
 	}
