@@ -6,11 +6,21 @@ import org.pgsg.user_service.user.domain.entity.User;
 import org.pgsg.user_service.user.domain.repository.UserRepository;
 import org.springframework.stereotype.Service;
 
+import java.util.UUID;
+
 @Service
 @RequiredArgsConstructor
 public class UserService {
 
 	private final UserRepository userRepository;
+
+	public UserDetailInfo getUser(UUID userId) {
+		User user = userRepository.findById(userId)
+				// TODO: 회원 도메인용 커스텀 예외 클래스로 대체
+				.orElseThrow(() -> new IllegalArgumentException("해당 ID를 가진 회원을 찾을 수 없습니다."));
+
+		return UserDetailInfo.from(user);
+	}
 
 	public UserDetailInfo getUser(String username) {
 		User user = userRepository.findByUsername(username)
