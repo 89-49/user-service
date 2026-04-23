@@ -6,7 +6,7 @@ import org.pgsg.user_service.user.domain.entity.UserRole;
 import java.util.UUID;
 
 // 인증
-public record UserDetailsInfo(
+public record UserDetailInfo(
 		UUID userId,
 		String username,
 		String password,
@@ -16,8 +16,8 @@ public record UserDetailsInfo(
 		boolean isEnabled
 ) {
 	// User 엔티티 -> UserDetailInfo DTO
-	public static UserDetailsInfo from(User user) {
-		return new UserDetailsInfo(
+	public static UserDetailInfo from(User user) {
+		return new UserDetailInfo(
 				user.getUserId(),
 				user.getUsername(),
 				user.getPassword(),
