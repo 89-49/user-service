@@ -21,17 +21,15 @@ public class UserDetailsImpl implements UserDetails {
     private final String password;    // 비밀번호
     private final String userRole;    // 권한 (예: ROLE_USER, ROLE_MASTER 등)
     private final String name;        // 회원의 실명
-    private final String chatTimeRange; // 회원이 설정한 채팅 가능 시간대
     private final boolean enabled;
 
     @Builder
-    public UserDetailsImpl(UUID uuid, String username, String password, String userRole, String name, String chatTimeRange, boolean enabled) {
+    public UserDetailsImpl(UUID uuid, String username, String password, String userRole, String name, , boolean enabled) {
         this.uuid = uuid;
         this.username = username;
         this.password = password;
         this.userRole = userRole;
         this.name = name;
-        this.chatTimeRange = chatTimeRange;
         this.enabled = enabled;
     }
 

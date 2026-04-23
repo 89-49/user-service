@@ -27,11 +27,10 @@ public class LoginFilter extends OncePerRequestFilter {
 
     // 게이트웨이에서 전달하는 헤더 키 정의
     private static final String HEADER_USER_ID = "X-User-Id";
-    private static final String HEADER_USERNAME = "X-User-Email"; // 로그인 ID로 사용
+    private static final String HEADER_USERNAME = "X-User-Username"; // 로그인 ID로 사용
     private static final String HEADER_USER_NAME = "X-User-Name";  // 실명
     private static final String HEADER_ROLES = "X-User-Roles";    // 권한
     private static final String HEADER_ENABLED = "X-User-Enabled";
-    private static final String HEADER_CHAT_RANGE = "X-Chat-Time-Range"; // 채팅 시간대
 
     private final HandlerExceptionResolver resolver;
 
@@ -76,17 +75,15 @@ public class LoginFilter extends OncePerRequestFilter {
             String name = decodeHeader(request.getHeader(HEADER_USER_NAME));
             String roles = request.getHeader(HEADER_ROLES);
             String enabledStr = request.getHeader(HEADER_ENABLED);
-            String chatTimeRange = request.getHeader(HEADER_CHAT_RANGE);
 
             // 2. UserDetailsImpl 빌더 생성 (클래스 구조에 맞춤)
             UserDetailsImpl userDetails = UserDetailsImpl.builder()
-                    .uuid(UUID.fromString(cleanUserId)) // UUID 변환
+                    .uuid(uuid) // UUID 변환
                     .username(username)                 // 로그인 아이디
                     .password("")                       // 인증은 Gateway에서 완료됨
                     .userRole(roles)                    // roles(X) -> userRole(O) 매핑
                     .name(name)                         // 실명
-                    .chatTimeRange(chatTimeRange)       // chatTimeRange 필드 추가
-                    .enabled("true".equalsIgnoreCase(enabled)) // boolean 변환
+                    .enabled("true".equalsIgnoreCase(enabledStr)) // boolean 변환
                     .build();
 
             // 3. 계정 활성화 여부 체크
