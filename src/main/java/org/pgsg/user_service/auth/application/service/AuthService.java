@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.pgsg.user_service.auth.application.dto.command.LoginUserCommand;
 import org.pgsg.user_service.auth.application.dto.command.SignupUserCommand;
 import org.pgsg.user_service.auth.application.dto.info.AuthInfo;
+import org.pgsg.user_service.auth.application.dto.info.SignupInfo;
 import org.pgsg.user_service.auth.domain.JwtTokenProvider;
 import org.pgsg.user_service.auth.domain.TokenRepository;
 import org.pgsg.user_service.auth.domain.UserAuthenticator;
@@ -11,6 +12,7 @@ import org.pgsg.user_service.auth.domain.model.TokenPair;
 import org.pgsg.user_service.user.application.UserService;
 import org.pgsg.user_service.user.application.dto.command.CreateUserCommand;
 import org.pgsg.user_service.user.application.dto.info.LoginUserDetailInfo;
+import org.pgsg.user_service.user.application.dto.info.UserDetailInfo;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -49,7 +51,7 @@ public class AuthService {
     }
 
     @Transactional
-    public void signup(SignupUserCommand command) {
+    public SignupInfo signup(SignupUserCommand command) {
         String encryptedPassword = passwordEncoder.encode(command.password());
         CreateUserCommand createUserCommand = new CreateUserCommand(
                 command.username(),
@@ -60,6 +62,7 @@ public class AuthService {
                 command.chatTimeRanges()
         );
 
-        userService.createUser(createUserCommand);
+        UserDetailInfo userInfo = userService.createUser(createUserCommand);
+        return SignupInfo.from(userInfo);
     }
 }

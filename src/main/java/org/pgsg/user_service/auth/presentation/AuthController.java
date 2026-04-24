@@ -3,11 +3,13 @@ package org.pgsg.user_service.auth.presentation;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.pgsg.user_service.auth.application.dto.info.AuthInfo;
+import org.pgsg.user_service.auth.application.dto.info.SignupInfo;
 import org.pgsg.user_service.auth.application.service.AuthService;
 import org.pgsg.user_service.auth.infrastructure.UserDetailsImpl;
 import org.pgsg.user_service.auth.presentation.dto.request.UserLoginRequest;
 import org.pgsg.user_service.auth.presentation.dto.request.UserSignupRequest;
 import org.pgsg.user_service.auth.presentation.dto.response.UserLoginResponse;
+import org.pgsg.user_service.auth.presentation.dto.response.UserSignupResponse;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -37,7 +39,9 @@ public class AuthController {
     }
 
     @PostMapping("/signup")
-    public void signup(@Valid @RequestBody UserSignupRequest userSignupRequest) {
-        authService.signup(userSignupRequest.toCommand());
+    public UserSignupResponse signup(@Valid @RequestBody UserSignupRequest userSignupRequest) {
+        SignupInfo info = authService.signup(userSignupRequest.toCommand());
+
+        return UserSignupResponse.from(info);
     }
 }
