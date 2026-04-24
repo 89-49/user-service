@@ -27,7 +27,7 @@ public class JwtTokenProviderImpl implements JwtTokenProvider {
      */
     @PostConstruct
     protected void init() {
-        byte[] keyBytes = Base64.getDecoder().decode(jwtProperties.getSecretKey());
+        byte[] keyBytes = Base64.getDecoder().decode(jwtProperties.getSecret());
         this.key = Keys.hmacShaKeyFor(keyBytes);
     }
 
