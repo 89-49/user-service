@@ -87,12 +87,10 @@ public class JwtTokenProviderImpl implements JwtTokenProvider {
      * 사용자 ID를 Subject에 넣고, 권한(role)을 Custom Claim으로 추가하여 서명합니다.
      */
     private String createToken(UUID userId, UserRole role, Long expiration) {
-        Claims claims = Jwts.claims().setSubject(userId.toString()).build();
-        claims.put("role", role.getRole());
-
         Date now = new Date();
         return Jwts.builder()
-                .setClaims(claims)
+                .subject(userId.toString())
+                .claim("role", role.getRole())
                 .setIssuedAt(now)
                 .setExpiration(new Date(now.getTime() + expiration))
                 .signWith(key, SignatureAlgorithm.HS256)
