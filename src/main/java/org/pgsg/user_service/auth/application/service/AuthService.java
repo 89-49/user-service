@@ -31,6 +31,7 @@ public class AuthService {
     private final PasswordEncoder passwordEncoder;
 
     //로그인 기능
+    @Transactional
     public AuthInfo login(LoginUserCommand command) {
 
         LoginUserDetailInfo userDetail = userService.getUser(command.getUsername());
@@ -46,6 +47,7 @@ public class AuthService {
     }
 
     //로그아웃 기능
+    @Transactional
     public void logout(UUID userId) {
         tokenRepository.deleteRefreshToken(userId);
     }
