@@ -20,7 +20,7 @@ public class UserController {
 
 	@GetMapping("/{userId}")
 	public UserDetailResponse getUser(@PathVariable("userId") UUID userId) {
-		UserDetailInfo userDetailInfo = userService.getUser(userId);
+		UserDetailInfo userDetailInfo = userService.getUserForAdmin(userId);
 
 		return UserDetailResponse.from(userDetailInfo);
 	}
