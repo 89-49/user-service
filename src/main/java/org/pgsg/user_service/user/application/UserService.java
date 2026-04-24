@@ -1,8 +1,8 @@
 package org.pgsg.user_service.user.application;
 
 import lombok.RequiredArgsConstructor;
-import org.pgsg.user_service.user.application.dto.LoginUserDetailInfo;
-import org.pgsg.user_service.user.application.dto.UserDetailInfo;
+import org.pgsg.user_service.user.application.dto.info.LoginUserDetailInfo;
+import org.pgsg.user_service.user.application.dto.info.UserDetailInfo;
 import org.pgsg.user_service.user.domain.entity.User;
 import org.pgsg.user_service.user.domain.entity.UserRole;
 import org.pgsg.user_service.user.domain.repository.UserRepository;
@@ -14,12 +14,17 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 import java.util.UUID;
 
+//TODO: CQRS 패턴 도입
 @Service
 @RequiredArgsConstructor
 public class UserService {
 
 	private final UserRepository userRepository;
 	private final RoleCheck roleCheck;
+
+	@Transactional
+	public void createUser() {
+	}
 
 	@Transactional(readOnly = true)
 	public UserDetailInfo getUserForAdmin(UUID userId) {
