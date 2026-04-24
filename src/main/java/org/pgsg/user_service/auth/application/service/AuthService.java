@@ -2,14 +2,18 @@ package org.pgsg.user_service.auth.application.service;
 
 import lombok.RequiredArgsConstructor;
 import org.pgsg.user_service.auth.application.dto.command.LoginUserCommand;
+import org.pgsg.user_service.auth.application.dto.command.SignupUserCommand;
 import org.pgsg.user_service.auth.application.dto.info.AuthInfo;
 import org.pgsg.user_service.auth.domain.JwtTokenProvider;
 import org.pgsg.user_service.auth.domain.TokenRepository;
 import org.pgsg.user_service.auth.domain.UserAuthenticator;
 import org.pgsg.user_service.auth.domain.model.TokenPair;
 import org.pgsg.user_service.user.application.UserService;
+import org.pgsg.user_service.user.application.dto.command.CreateUserCommand;
 import org.pgsg.user_service.user.application.dto.info.LoginUserDetailInfo;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Duration;
 import java.util.UUID;
@@ -22,6 +26,7 @@ public class AuthService {
     private final JwtTokenProvider jwtTokenProvider;
     private final TokenRepository tokenRepository;
     private final UserAuthenticator userAuthenticator;
+    private final PasswordEncoder passwordEncoder;
 
     //로그인 기능
     public AuthInfo login(LoginUserCommand command) {
@@ -41,5 +46,20 @@ public class AuthService {
     //로그아웃 기능
     public void logout(UUID userId) {
         tokenRepository.deleteRefreshToken(userId);
+    }
+
+    @Transactional
+    public void signup(SignupUserCommand command) {
+        String encryptedPassword = passwordEncoder.encode(command.password());
+        CreateUserCommand createUserCommand = new CreateUserCommand(
+                command.username(),
+                encryptedPassword,
+                command.userRole(),
+                command.name(),
+                command.nickname(),
+                command.chatTimeRanges()
+        );
+
+        userService.createUser(createUserCommand);
     }
 }
