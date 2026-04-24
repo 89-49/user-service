@@ -1,6 +1,6 @@
-package org.pgsg.user_service.user.presentation.dto;
+package org.pgsg.user_service.user.presentation.dto.response;
 
-import org.pgsg.user_service.user.application.dto.LoginUserDetailInfo;
+import org.pgsg.user_service.user.application.dto.info.LoginUserDetailInfo;
 import org.pgsg.user_service.user.domain.entity.UserRole;
 
 import java.util.UUID;

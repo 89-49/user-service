@@ -8,7 +8,7 @@ import org.pgsg.user_service.auth.domain.TokenRepository;
 import org.pgsg.user_service.auth.domain.UserAuthenticator;
 import org.pgsg.user_service.auth.domain.vo.TokenPair;
 import org.pgsg.user_service.user.application.UserService;
-import org.pgsg.user_service.user.application.dto.LoginUserDetailInfo;
+import org.pgsg.user_service.user.application.dto.info.LoginUserDetailInfo;
 import org.springframework.stereotype.Service;
 
 import java.time.Duration;
