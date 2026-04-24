@@ -15,7 +15,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 import java.util.UUID;
 
-//TODO: CQRS 패턴 도입
+// TODO: CQRS 패턴 도입
 @Service
 @RequiredArgsConstructor
 public class UserService {
@@ -25,6 +25,15 @@ public class UserService {
 
 	@Transactional
 	public UserDetailInfo createUser(CreateUserCommand createdUserCommand) {
+		// TODO: GlobalExceptionHandler 도입 시 회원 도메인 전용 커스텀 예외 클래스로 대체
+		if (userRepository.existsByUsername(createdUserCommand.username())) {
+			throw new IllegalArgumentException("이미 등록된 회원입니다.");
+		}
+		// TODO: GlobalExceptionHandler 도입 시 회원 도메인 전용 커스텀 예외 클래스로 대체
+		if (UserRole.isAdmin(createdUserCommand.userRole()) && !roleCheck.hasRole(UserRole.MASTER)) {
+			throw new AccessDeniedException("관리자를 등록할 권한이 없습니다.");
+		}
+
 		User newUser = createdUserCommand.toUserEntity();
 		User savedUser = userRepository.save(newUser);
 

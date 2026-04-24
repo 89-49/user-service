@@ -12,6 +12,10 @@ public enum UserRole {
 		return "ROLE_" + this.name();
 	}
 
+	public static boolean isAdmin(UserRole userRole) {
+		return userRole == MANAGER || userRole == MASTER;
+	}
+
 	public static UserRole find(String userRole) {
 		return Arrays.stream(UserRole.values())
 				.filter(role -> role.getRole().equals(userRole))
