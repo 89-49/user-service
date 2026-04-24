@@ -8,6 +8,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 
 import java.util.Collection;
 import java.util.Collections;
+import java.util.UUID;
 
 @AllArgsConstructor
 public class UserDetailsImpl implements UserDetails {
@@ -16,6 +17,10 @@ public class UserDetailsImpl implements UserDetails {
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         return Collections.singleton(new SimpleGrantedAuthority(user.getUserRole().getRole()));
+    }
+
+    public UUID getUuid() {
+        return user.getUserId();
     }
 
     @Override
