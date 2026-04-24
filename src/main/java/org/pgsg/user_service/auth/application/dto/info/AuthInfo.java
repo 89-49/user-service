@@ -2,7 +2,7 @@ package org.pgsg.user_service.auth.application.dto.info;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
-import org.pgsg.user_service.auth.domain.vo.TokenPair;
+import org.pgsg.user_service.auth.domain.model.TokenPair;
 
 @Getter
 @AllArgsConstructor

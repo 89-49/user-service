@@ -1,7 +1,7 @@
 package org.pgsg.user_service.auth.domain;
 
-import org.pgsg.user_service.auth.domain.vo.TokenPair;
-import org.pgsg.user_service.user.domain.entity.UserRole;
+import org.pgsg.user_service.auth.domain.model.TokenPair;
+import org.pgsg.user_service.user.domain.model.UserRole;
 
 import java.util.UUID;
 

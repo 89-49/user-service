@@ -1,6 +1,6 @@
 package org.pgsg.user_service.user.infrastructure.repository;
 
-import org.pgsg.user_service.user.domain.entity.User;
+import org.pgsg.user_service.user.domain.model.User;
 import org.pgsg.user_service.user.domain.repository.UserRepository;
 import org.springframework.data.jpa.repository.JpaRepository;
 

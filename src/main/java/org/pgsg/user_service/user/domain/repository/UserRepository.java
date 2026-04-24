@@ -1,6 +1,6 @@
 package org.pgsg.user_service.user.domain.repository;
 
-import org.pgsg.user_service.user.domain.entity.User;
+import org.pgsg.user_service.user.domain.model.User;
 
 import java.util.Optional;
 import java.util.UUID;
