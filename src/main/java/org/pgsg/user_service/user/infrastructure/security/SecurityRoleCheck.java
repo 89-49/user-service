@@ -1,6 +1,6 @@
 package org.pgsg.user_service.user.infrastructure.security;
 
-import org.pgsg.user_service.user.domain.entity.UserRole;
+import org.pgsg.user_service.user.domain.model.UserRole;
 import org.pgsg.user_service.user.domain.service.RoleCheck;
 import org.springframework.stereotype.Component;
 

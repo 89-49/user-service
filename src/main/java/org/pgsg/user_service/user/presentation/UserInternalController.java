@@ -2,10 +2,10 @@ package org.pgsg.user_service.user.presentation;
 
 import lombok.RequiredArgsConstructor;
 import org.pgsg.user_service.user.application.UserService;
-import org.pgsg.user_service.user.application.dto.LoginUserDetailInfo;
-import org.pgsg.user_service.user.application.dto.UserDetailInfo;
-import org.pgsg.user_service.user.presentation.dto.LoginUserResponse;
-import org.pgsg.user_service.user.presentation.dto.UserDetailResponse;
+import org.pgsg.user_service.user.application.dto.info.LoginUserDetailInfo;
+import org.pgsg.user_service.user.application.dto.info.UserDetailInfo;
+import org.pgsg.user_service.user.presentation.dto.response.LoginUserResponse;
+import org.pgsg.user_service.user.presentation.dto.response.UserDetailResponse;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.UUID;
