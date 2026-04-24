@@ -16,8 +16,8 @@ import java.util.UUID;
 		name = "p_user",
 		uniqueConstraints = {
 				@UniqueConstraint(
-						name = "uk_user_user_info",
-						columnNames = {"username", "name", "nickname"}
+						name = "uk_user_username",
+						columnNames = {"username"}
 				)
 		}
 )
@@ -67,6 +67,11 @@ public class User {
 				.name(name)
 				.nickname(nickname)
 				.build();
+	}
+
+	public boolean isEnabled() {
+		// TODO: 공통모듈 배포 완료 이후 User 엔티티가 BaseEntity를 상속받을 시 deletedAt == null로 조건 수정
+		return true;
 	}
 
 	// TODO: 채팅가능시간 관련 세부 로직 추가(인증 로직 구현 이후 회원 관련 기능 구현 시)
