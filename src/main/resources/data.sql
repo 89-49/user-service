@@ -1,5 +1,4 @@
 -- 마스터 관리자 계정 6개 생성
--- 비밀번호: admin1234! (BCrypt 암호화됨)
 
 INSERT INTO p_user (user_id, username, password, user_role, name, nickname)
 SELECT gen_random_uuid(), 'admin1', '$2a$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'MASTER', '마스터1', 'MASTER_1'

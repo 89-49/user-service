@@ -1,6 +1,7 @@
 package org.pgsg.user_service.user.application;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.pgsg.user_service.user.application.dto.command.CreateUserCommand;
 import org.pgsg.user_service.user.application.dto.info.LoginUserDetailInfo;
 import org.pgsg.user_service.user.application.dto.info.UserDetailInfo;
@@ -8,6 +9,7 @@ import org.pgsg.user_service.user.domain.model.User;
 import org.pgsg.user_service.user.domain.model.UserRole;
 import org.pgsg.user_service.user.domain.repository.UserRepository;
 import org.pgsg.user_service.user.domain.service.RoleCheck;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -16,6 +18,7 @@ import java.util.List;
 import java.util.UUID;
 
 // TODO: CQRS 패턴 도입
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class UserService {
@@ -34,10 +37,13 @@ public class UserService {
 			throw new AccessDeniedException("관리자를 등록할 권한이 없습니다.");
 		}
 
-		User newUser = createdUserCommand.toUserEntity();
-		User savedUser = userRepository.save(newUser);
+		try {
+			User savedUser = userRepository.save(createdUserCommand.toUserEntity());
 
-		return UserDetailInfo.from(savedUser);
+			return UserDetailInfo.from(savedUser);
+		} catch (DataIntegrityViolationException e) {
+			throw new IllegalArgumentException("이미 등록된 회원입니다.");
+		}
 	}
 
 	@Transactional(readOnly = true)
