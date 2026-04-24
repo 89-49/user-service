@@ -12,6 +12,7 @@ import org.pgsg.user_service.user.application.dto.info.LoginUserDetailInfo;
 import org.springframework.stereotype.Service;
 
 import java.time.Duration;
+import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -22,6 +23,7 @@ public class AuthService {
     private final TokenRepository tokenRepository;
     private final UserAuthenticator userAuthenticator;
 
+    //로그인 기능
     public AuthInfo login(LoginUserCommand command) {
 
         LoginUserDetailInfo userDetail = userService.getUser(command.getUsername());
@@ -34,5 +36,10 @@ public class AuthService {
         tokenRepository.saveRefreshToken(userDetail.userId(), tokenPair.getRefreshToken(), Duration.ofDays(7));
 
         return AuthInfo.from(tokenPair);
+    }
+
+    //로그아웃 기능
+    public void logout(UUID userId) {
+        tokenRepository.deleteRefreshToken(userId);
     }
 }
