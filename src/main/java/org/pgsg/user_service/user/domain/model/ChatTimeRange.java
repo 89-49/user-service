@@ -1,4 +1,4 @@
-package org.pgsg.user_service.user.domain.entity;
+package org.pgsg.user_service.user.domain.model;
 
 
 import jakarta.persistence.Column;

@@ -1,4 +1,4 @@
-package org.pgsg.user_service.auth.domain.vo;
+package org.pgsg.user_service.auth.domain.model;
 
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;

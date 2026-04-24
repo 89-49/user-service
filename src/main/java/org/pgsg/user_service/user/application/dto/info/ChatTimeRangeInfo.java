@@ -1,6 +1,6 @@
-package org.pgsg.user_service.user.application.dto;
+package org.pgsg.user_service.user.application.dto.info;
 
-import org.pgsg.user_service.user.domain.entity.ChatTimeRange;
+import org.pgsg.user_service.user.domain.model.ChatTimeRange;
 
 import java.time.DayOfWeek;
 import java.time.LocalTime;

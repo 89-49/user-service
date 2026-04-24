@@ -1,7 +1,7 @@
 package org.pgsg.user_service.auth.infrastructure;
 
 import lombok.AllArgsConstructor;
-import org.pgsg.user_service.user.domain.entity.User;
+import org.pgsg.user_service.user.domain.model.User;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;

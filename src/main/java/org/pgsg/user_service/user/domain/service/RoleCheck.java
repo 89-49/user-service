@@ -1,6 +1,6 @@
 package org.pgsg.user_service.user.domain.service;
 
-import org.pgsg.user_service.user.domain.entity.UserRole;
+import org.pgsg.user_service.user.domain.model.UserRole;
 
 import java.util.List;
 

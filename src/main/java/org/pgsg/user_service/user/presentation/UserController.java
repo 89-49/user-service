@@ -2,8 +2,8 @@ package org.pgsg.user_service.user.presentation;
 
 import lombok.RequiredArgsConstructor;
 import org.pgsg.user_service.user.application.UserService;
-import org.pgsg.user_service.user.application.dto.UserDetailInfo;
-import org.pgsg.user_service.user.presentation.dto.UserDetailResponse;
+import org.pgsg.user_service.user.application.dto.info.UserDetailInfo;
+import org.pgsg.user_service.user.presentation.dto.response.UserDetailResponse;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;

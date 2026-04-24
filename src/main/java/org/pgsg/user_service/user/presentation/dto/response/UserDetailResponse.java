@@ -1,8 +1,8 @@
-package org.pgsg.user_service.user.presentation.dto;
+package org.pgsg.user_service.user.presentation.dto.response;
 
-import org.pgsg.user_service.user.application.dto.ChatTimeRangeInfo;
-import org.pgsg.user_service.user.application.dto.UserDetailInfo;
-import org.pgsg.user_service.user.domain.entity.UserRole;
+import org.pgsg.user_service.user.application.dto.info.ChatTimeRangeInfo;
+import org.pgsg.user_service.user.application.dto.info.UserDetailInfo;
+import org.pgsg.user_service.user.domain.model.UserRole;
 
 import java.util.List;
 import java.util.UUID;

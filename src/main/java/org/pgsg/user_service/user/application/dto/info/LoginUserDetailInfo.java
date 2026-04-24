@@ -1,7 +1,7 @@
-package org.pgsg.user_service.user.application.dto;
+package org.pgsg.user_service.user.application.dto.info;
 
-import org.pgsg.user_service.user.domain.entity.User;
-import org.pgsg.user_service.user.domain.entity.UserRole;
+import org.pgsg.user_service.user.domain.model.User;
+import org.pgsg.user_service.user.domain.model.UserRole;
 
 import java.util.UUID;
 

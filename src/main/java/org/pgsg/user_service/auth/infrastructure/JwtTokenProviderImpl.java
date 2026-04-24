@@ -5,8 +5,8 @@ import io.jsonwebtoken.security.Keys;
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import org.pgsg.user_service.auth.domain.JwtTokenProvider;
-import org.pgsg.user_service.auth.domain.vo.TokenPair;
-import org.pgsg.user_service.user.domain.entity.UserRole;
+import org.pgsg.user_service.auth.domain.model.TokenPair;
+import org.pgsg.user_service.user.domain.model.UserRole;
 import org.springframework.stereotype.Component;
 
 import java.security.Key;
@@ -27,7 +27,7 @@ public class JwtTokenProviderImpl implements JwtTokenProvider {
      */
     @PostConstruct
     protected void init() {
-        byte[] keyBytes = Base64.getDecoder().decode(jwtProperties.getSecretKey());
+        byte[] keyBytes = Base64.getDecoder().decode(jwtProperties.getSecret());
         this.key = Keys.hmacShaKeyFor(keyBytes);
     }
 
