@@ -75,4 +75,11 @@ public class User {
 	}
 
 	// TODO: 채팅가능시간 관련 세부 로직 추가(인증 로직 구현 이후 회원 관련 기능 구현 시)
+	public void addChatTimeRangeList(List<ChatTimeRange> chatTimeRanges) {
+		this.chatTimeRange.addAll(chatTimeRanges);
+	}
+
+	public void addChatTimeRange(ChatTimeRange chatTimeRange) {
+		addChatTimeRangeList(List.of(chatTimeRange));
+	}
 }

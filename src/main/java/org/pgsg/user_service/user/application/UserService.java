@@ -1,6 +1,7 @@
 package org.pgsg.user_service.user.application;
 
 import lombok.RequiredArgsConstructor;
+import org.pgsg.user_service.user.application.dto.command.CreateUserCommand;
 import org.pgsg.user_service.user.application.dto.info.LoginUserDetailInfo;
 import org.pgsg.user_service.user.application.dto.info.UserDetailInfo;
 import org.pgsg.user_service.user.domain.model.User;
@@ -23,7 +24,11 @@ public class UserService {
 	private final RoleCheck roleCheck;
 
 	@Transactional
-	public void createUser() {
+	public UserDetailInfo createUser(CreateUserCommand createdUserCommand) {
+		User newUser = createdUserCommand.toUserEntity();
+		User savedUser = userRepository.save(newUser);
+
+		return UserDetailInfo.from(savedUser);
 	}
 
 	@Transactional(readOnly = true)
