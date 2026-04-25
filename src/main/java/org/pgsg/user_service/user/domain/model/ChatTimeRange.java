@@ -28,6 +28,16 @@ public class ChatTimeRange {
 	private LocalTime endTime;
 
 	public static ChatTimeRange of(DayOfWeek dayOfWeek, LocalTime startTime, LocalTime endTime) {
+		validateChatTime(dayOfWeek, startTime, endTime);
 		return new ChatTimeRange(dayOfWeek, startTime, endTime);
+	}
+
+	private static void validateChatTime(DayOfWeek dayOfWeek, LocalTime startTime, LocalTime endTime) {
+		if (dayOfWeek == null || startTime == null || endTime == null) {
+			throw new IllegalArgumentException("요일/시작 시간/종료 시간은 필수입니다.");
+		}
+		if (!startTime.isBefore(endTime)) {
+			throw new IllegalArgumentException("시작 시간은 종료 시간보다 빨라야 합니다.");
+		}
 	}
 }

@@ -10,7 +10,7 @@ public record CreateChatTimeCommand(
 		LocalTime startTime,
 		LocalTime endTime
 ) {
-	public ChatTimeRange to() {
+	public ChatTimeRange toChatTime() {
 		return ChatTimeRange.of(dayOfWeek, startTime, endTime);
 	}
 }
