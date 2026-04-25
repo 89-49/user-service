@@ -5,6 +5,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
+// TODO: Config 클래스명 수정(공통모듈의 SecurityConfig와 충돌할 가능성 있음)
 @Configuration
 public class SecurityConfig {
 

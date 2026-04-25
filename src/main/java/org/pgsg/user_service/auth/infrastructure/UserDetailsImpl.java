@@ -10,6 +10,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.UUID;
 
+// TODO: 공통모듈에서 제공하는 UserDetailsImpl로 대체한 후 deprecated 혹은 삭제
 @AllArgsConstructor
 public class UserDetailsImpl implements UserDetails {
     private final User user;
