@@ -9,8 +9,11 @@ import java.util.UUID;
 public interface UserRepository {
 
 	User save(User user);
+
 	Optional<User> findById(UUID userId);
 
 	// 로그인 진행 시 사용할 회원 조회 메서드
 	Optional<User> findByUsername(String username);
+
+	boolean existsByUsername(String username);
 }
