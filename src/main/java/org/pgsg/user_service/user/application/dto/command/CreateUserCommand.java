@@ -21,7 +21,7 @@ public record CreateUserCommand(
 		}
 		return chatTimeRangeInfos.stream()
 				.filter(Objects::nonNull)
-				.map(CreateChatTimeCommand::to)
+				.map(CreateChatTimeCommand::toChatTime)
 				.toList();
 	}
 

@@ -46,7 +46,7 @@ public record UserSignupRequest(
             @NotNull(message = "종료 시간은 필수입니다.")
             LocalTime endTime
     ) {
-        public CreateChatTimeCommand toCreateCommand() {
+        public CreateChatTimeCommand toCommand() {
             return new CreateChatTimeCommand(dayOfWeek, startTime, endTime);
         }
     }
@@ -54,13 +54,13 @@ public record UserSignupRequest(
     // Request DTO를 서비스 계층에서 사용할 Command 객체로 변환
     public SignupUserCommand toCommand() {
         return new SignupUserCommand(
-                this.username,
-                this.password,
-                UserRole.find(this.userRole.toUpperCase()),
-                this.name,
-                this.nickname,
-                this.chatTimeRanges.stream()
-                        .map(ChatTimeRequest::toCreateCommand)
+                username,
+                password,
+                UserRole.find(userRole),
+                name,
+                nickname,
+                chatTimeRanges.stream()
+                        .map(ChatTimeRequest::toCommand)
                         .toList()
         );
     }
