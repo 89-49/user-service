@@ -28,7 +28,8 @@ public class UserAuthConfig implements SecurityConfig {
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
 
         http.authorizeHttpRequests(auth -> auth
-            .requestMatchers("/api/v1/auth/**").permitAll()     // 로그인, 회원가입 허용
+            .requestMatchers("/api/v1/auth/**").permitAll() // 로그인, 회원가입 허용
+            .requestMatchers("/internal/v1/users/**").permitAll()
         );
 
         return commonSecurityConfig.filterChain(http);
