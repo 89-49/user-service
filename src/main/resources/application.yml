@@ -1,0 +1,38 @@
+spring:
+  application:
+    name: user-service
+
+  profiles:
+    active: dev
+
+  config:
+    import:
+      - optional:configserver:${CONFIG_SERVER}
+      - optional:file:.env[.properties]   # user-service 프로젝트 내 .env 파일의 값을 우선 주입
+
+  # Config Server 플레이스홀더 해석 문제로 로컬에서 직접 설정
+  datasource:
+    driver-class-name: org.postgresql.Driver
+    username: ${DB_USERNAME}
+    password: ${DB_PASSWORD}
+    url: ${DB_URL}
+
+  # 테이블 생성 후 data.sql 실행용(회원에서는 MASTER 권한 계정을 미리 등록하기 위해 필요)
+  sql:
+    init:
+      mode: always
+
+  jpa:
+    # configs에 포함된 설정이나, 초기 배포 시 설정 변경의 편의를 위해 환경변수를 사용
+    # (.env 파일 내부의 값만 변경하면 됨)
+    hibernate:
+      ddl-auto: ${SPRING_JPA_HIBERNATE_DDL-AUTO:validate}
+    show_sql: ${SPRING_JPA_SHOW-SQL:false}
+    # JPA가 준비된 이후 src/main/resources/data.sql 파일의 MASTER 등록 쿼리 실행
+    defer-datasource-initialization: true
+
+jwt:
+  secret: ${JWT_SECRET}
+
+server:
+  port: ${SERVER_PORT:18099}
