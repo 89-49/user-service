@@ -66,7 +66,16 @@ public class UserService {
 	}
 
 	@Transactional(readOnly = true)
-	public LoginUserDetailInfo getUser(String username) {
+	public LoginUserDetailInfo getUserForAuth(UUID userId) {
+		User user = userRepository.findById(userId)
+				// TODO: GlobalExceptionHandler 도입 시 회원 도메인용 커스텀 예외 클래스로 대체
+				.orElseThrow(() -> new IllegalArgumentException("해당 ID를 가진 회원을 찾을 수 없습니다."));
+
+		return LoginUserDetailInfo.from(user);
+	}
+
+	@Transactional(readOnly = true)
+	public LoginUserDetailInfo getUserForAuth(String username) {
 		User user = userRepository.findByUsername(username)
 				// TODO: GlobalExceptionHandler 도입 시 회원 도메인용 커스텀 예외 클래스로 대체
 				.orElseThrow(() -> new IllegalArgumentException("해당 username을 사용하는 회원을 찾을 수 없습니다."));

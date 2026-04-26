@@ -19,7 +19,7 @@ public class UserInternalController {
 
 	@GetMapping
 	public LoginUserResponse getUser(@RequestParam(value = "username") String username) {
-		LoginUserDetailInfo userDetailInfo = userService.getUser(username);
+		LoginUserDetailInfo userDetailInfo = userService.getUserForAuth(username);
 
 		return LoginUserResponse.from(userDetailInfo);
 	}

@@ -1,7 +1,6 @@
 package org.pgsg.user_service.auth.infrastructure;
 
 import lombok.RequiredArgsConstructor;
-import org.pgsg.config.security.UserDetailsImpl;
 import org.pgsg.user_service.user.domain.exception.UserException;
 import org.pgsg.user_service.user.application.UserService;
 import org.pgsg.user_service.user.application.dto.info.LoginUserDetailInfo;
@@ -21,19 +20,11 @@ public class UserDetailsServiceImpl implements UserDetailsService {
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
 		try {
-			LoginUserDetailInfo userDetailInfo = userService.getUser(username);
+			LoginUserDetailInfo loginDetails = userService.getUserForAuth(username);
 
             // 공통모듈에서 제공하는 커스텀 UserDetailsImpl로 반환
             // 커스텀 UserDetailsImpl을 사용하기 위해 AuthenticationManager를 사용한 방식으로 전환함
-            return UserDetailsImpl.builder()
-                    .uuid(userDetailInfo.userId())
-                    .username(userDetailInfo.username())
-                    .password(userDetailInfo.password())
-                    .userRole(userDetailInfo.userRole().getRole())
-                    .name(userDetailInfo.name())
-                    .nickname(userDetailInfo.nickname())
-                    .enabled(userDetailInfo.isEnabled())
-                    .build();
+            return loginDetails.toUserDetails();
 		} catch (UserException e) {
             throw new UsernameNotFoundException("사용자를 찾을 수 없습니다: " + username);
 		}
