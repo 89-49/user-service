@@ -46,7 +46,7 @@ public class UserService {
 
 	@Transactional(readOnly = true)
 	public UserDetailInfo getUserForAdmin(UUID userId) {
-		// TODO: GlobalExceptionHandler 도입 시 회원 도메인 전용 커스텀 예외 클래스로 대체
+
 		if (!roleCheck.hasRole(List.of(UserRole.MANAGER, UserRole.MASTER))) {
 			throw new UserServiceException("AdminAccessDeniedException");
 		}
@@ -57,7 +57,6 @@ public class UserService {
 	@Transactional(readOnly = true)
 	public UserDetailInfo getUser(UUID userId) {
 		User user = userRepository.findById(userId)
-				// TODO: GlobalExceptionHandler 도입 시 회원 도메인용 커스텀 예외 클래스로 대체
 				.orElseThrow(() -> new UserServiceException("UserNotFoundException"));
 
 		return UserDetailInfo.from(user);
@@ -66,7 +65,6 @@ public class UserService {
 	@Transactional(readOnly = true)
 	public LoginUserDetailInfo getUserForAuth(UUID userId) {
 		User user = userRepository.findById(userId)
-				// TODO: GlobalExceptionHandler 도입 시 회원 도메인용 커스텀 예외 클래스로 대체
 				.orElseThrow(() -> new UserServiceException("UserNotFoundException"));
 
 		return LoginUserDetailInfo.from(user);
@@ -75,7 +73,6 @@ public class UserService {
 	@Transactional(readOnly = true)
 	public LoginUserDetailInfo getUserForAuth(String username) {
 		User user = userRepository.findByUsername(username)
-				// TODO: GlobalExceptionHandler 도입 시 회원 도메인용 커스텀 예외 클래스로 대체
 				.orElseThrow(() -> new UserServiceException("UserNotFoundException"));
 
 		return LoginUserDetailInfo.from(user);
