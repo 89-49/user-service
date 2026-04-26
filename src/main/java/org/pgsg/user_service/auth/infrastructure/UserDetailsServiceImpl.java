@@ -11,12 +11,12 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
 // 이 클래스는 AuthService 내부에서 직접 호출해서 사용하지 않아도 됨
+// AuthenticationManager에의 인증로직 통과 시, 커스텀한 UserDetailsImpl를 제공하기 위한 작업을 수행하는 클래스
 @Service
 @RequiredArgsConstructor
 public class UserDetailsServiceImpl implements UserDetailsService {
 
-    // 추후 FeignClient로 교체될 지점
-    private final UserService userService;
+    private final UserService userService;	// 추후 FeignClient로 교체될 지점
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
