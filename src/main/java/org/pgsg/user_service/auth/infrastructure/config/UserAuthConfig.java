@@ -2,12 +2,19 @@ package org.pgsg.user_service.auth.infrastructure.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
-// TODO: Config 클래스명 수정(공통모듈의 SecurityConfig와 충돌할 가능성 있음)
+// 로그인 인증에 필요한 추가적인 빈 등록
 @Configuration
-public class SecurityConfig {
+public class UserAuthConfig {
+
+    @Bean
+    public AuthenticationManager authenticationManager(AuthenticationConfiguration configuration) throws Exception {
+        return configuration.getAuthenticationManager();
+    }
 
     @Bean
     public PasswordEncoder passwordEncoder() {
