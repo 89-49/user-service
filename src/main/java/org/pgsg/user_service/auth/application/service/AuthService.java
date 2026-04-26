@@ -1,6 +1,7 @@
 package org.pgsg.user_service.auth.application.service;
 
 import lombok.RequiredArgsConstructor;
+import org.pgsg.config.security.UserDetailsImpl;
 import org.pgsg.user_service.auth.application.dto.command.LoginUserCommand;
 import org.pgsg.user_service.auth.application.dto.command.SignupUserCommand;
 import org.pgsg.user_service.auth.application.dto.info.AuthInfo;
@@ -11,7 +12,6 @@ import org.pgsg.user_service.auth.domain.UserAuthenticator;
 import org.pgsg.user_service.auth.domain.model.TokenPair;
 import org.pgsg.user_service.user.application.UserService;
 import org.pgsg.user_service.user.application.dto.command.CreateUserCommand;
-import org.pgsg.user_service.user.application.dto.info.LoginUserDetailInfo;
 import org.pgsg.user_service.user.application.dto.info.UserDetailInfo;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -24,7 +24,7 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class AuthService {
 
-    private final UserService userService;
+    private final UserService userService;  // 분리할 경우 내부적으로 FeignClient를 사용하는 UserProvider로 대체 필요
     private final JwtTokenProvider jwtTokenProvider;
     private final TokenRepository tokenRepository;
     private final UserAuthenticator userAuthenticator;
@@ -34,14 +34,12 @@ public class AuthService {
     @Transactional
     public AuthInfo login(LoginUserCommand command) {
 
-        LoginUserDetailInfo userDetail = userService.getUser(command.getUsername());
-
-        // 비밀번호 검증
-        userAuthenticator.verify(userDetail, command.getPassword());
+        // 최초 로그인 시 비밀번호 검증
+        UserDetailsImpl userDetail = userAuthenticator.verify(command.getUsername(), command.getPassword());
 
         // 토큰 생성 및 저장
-        TokenPair tokenPair = jwtTokenProvider.createTokenPair(userDetail.userId(), userDetail.userRole());
-        tokenRepository.saveRefreshToken(userDetail.userId(), tokenPair.getRefreshToken(), Duration.ofDays(7));
+        TokenPair tokenPair = jwtTokenProvider.createTokenPair(userDetail);
+        tokenRepository.saveRefreshToken(userDetail.getUuid(), tokenPair.getRefreshToken(), Duration.ofDays(7));
 
         return AuthInfo.from(tokenPair);
     }
