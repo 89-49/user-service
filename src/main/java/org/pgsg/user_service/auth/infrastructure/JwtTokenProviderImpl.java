@@ -4,6 +4,7 @@ import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.Keys;
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.pgsg.config.security.UserDetailsImpl;
 import org.pgsg.user_service.auth.domain.JwtTokenProvider;
 import org.pgsg.user_service.auth.domain.model.TokenPair;
@@ -16,9 +17,12 @@ import java.util.Base64;
 import java.util.Date;
 import java.util.UUID;
 
+@Slf4j
 @Component
 @RequiredArgsConstructor
 public class JwtTokenProviderImpl implements JwtTokenProvider {
+
+	private static final String ACCESS_TOKEN_PREFIX = "Bearer ";
 
     private final JwtProperties jwtProperties;
     private SecretKey secretKey;
@@ -29,7 +33,7 @@ public class JwtTokenProviderImpl implements JwtTokenProvider {
      */
     @PostConstruct
     protected void init() {
-        // 32자 이상의 아무 문자열이나 사용해도 JWT secret key로 변환 가능하도록, 먼저 base64로 인코딩한 후 키를 생성하도록 수정
+		// 32자 이상의 아무 문자열이나 사용해도 JWT secret key로 변환 가능하도록, 먼저 base64로 인코딩한 후 키를 생성하도록 수정
         String base64UrlEncoded = Base64.getUrlEncoder()
                 .encodeToString(jwtProperties.getSecret().getBytes(StandardCharsets.UTF_8));
 
@@ -96,8 +100,7 @@ public class JwtTokenProviderImpl implements JwtTokenProvider {
     private String createAccessToken(UserDetails userDetails, Long expiration) {
         Date now = new Date();
         UserDetailsImpl userDetailsInfo = (UserDetailsImpl) userDetails;
-
-		return Jwts.builder()
+		String accessToken = Jwts.builder()
 				.subject(userDetailsInfo.getUuid().toString())
 				.claim("username", userDetailsInfo.getUsername())
 				.claim("role", userDetailsInfo.getUserRole())
@@ -108,6 +111,9 @@ public class JwtTokenProviderImpl implements JwtTokenProvider {
 				.expiration(new Date(now.getTime() + expiration))
 				.signWith(secretKey, Jwts.SIG.HS256)
 				.compact();
+
+		// 생성한 accessToken에 'Bearer '를 붙여서 반환
+		return ACCESS_TOKEN_PREFIX + accessToken;
     }
 
     /**
