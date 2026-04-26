@@ -4,6 +4,7 @@ import org.pgsg.user_service.user.domain.model.ChatTimeRange;
 import org.pgsg.user_service.user.domain.model.User;
 import org.pgsg.user_service.user.domain.model.UserRole;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
@@ -14,8 +15,14 @@ public record UserDetailInfo(
 		UserRole userRole,
 		String name,
 		String nickname,
-		List<ChatTimeRangeInfo> chatTimeRange
-		// TODO: 공통모듈 배포 이후 응답 데이터에 BaseEntity의 Auditing 필드 추가
+		List<ChatTimeRangeInfo> chatTimeRange,
+
+		LocalDateTime createdAt,
+		UUID createdBy,
+		LocalDateTime modifiedAt,
+		UUID modifiedBy,
+		LocalDateTime deletedAt,
+		UUID deletedBy
 ) {
 	public static List<ChatTimeRangeInfo> getChatTimeRangeInfos(List<ChatTimeRange> chatTimeRanges) {
 		if (chatTimeRanges == null || chatTimeRanges.isEmpty()) {
@@ -35,7 +42,14 @@ public record UserDetailInfo(
 				user.getUserRole(),
 				user.getName(),
 				user.getNickname(),
-				getChatTimeRangeInfos(user.getChatTimeRange())
+				getChatTimeRangeInfos(user.getChatTimeRanges()),
+
+				user.getCreatedAt(),
+				user.getCreatedBy(),
+				user.getModifiedAt(),
+				user.getModifiedBy(),
+				user.getDeletedAt(),
+				user.getDeletedBy()
 		);
 	}
 }
