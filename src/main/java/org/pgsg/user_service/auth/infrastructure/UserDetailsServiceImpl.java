@@ -1,23 +1,41 @@
 package org.pgsg.user_service.auth.infrastructure;
 
 import lombok.RequiredArgsConstructor;
-import org.pgsg.user_service.user.domain.repository.UserRepository;
+import org.pgsg.config.security.UserDetailsImpl;
+import org.pgsg.user_service.user.domain.exception.UserException;
+import org.pgsg.user_service.user.application.UserService;
+import org.pgsg.user_service.user.application.dto.info.LoginUserDetailInfo;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
+// 이 클래스는 AuthService 내부에서 직접 호출해서 사용하지 않아도 됨
 @Service
 @RequiredArgsConstructor
 public class UserDetailsServiceImpl implements UserDetailsService {
 
-    private final UserRepository userRepository; // 추후 FeignClient로 교체될 지점
+    // 추후 FeignClient로 교체될 지점
+    private final UserService userService;
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        return userRepository.findByUsername(username)
-                // TODO: 공통모듈의 UserDetailsImpl에 호환되도록 수정 필요
-                .map(UserDetailsImpl::new)
-                .orElseThrow(() -> new UsernameNotFoundException("사용자를 찾을 수 없습니다: " + username));
+		try {
+			LoginUserDetailInfo userDetailInfo = userService.getUser(username);
+
+            // 공통모듈에서 제공하는 커스텀 UserDetailsImpl로 반환
+            // 커스텀 UserDetailsImpl을 사용하기 위해 AuthenticationManager를 사용한 방식으로 전환함
+            return UserDetailsImpl.builder()
+                    .uuid(userDetailInfo.userId())
+                    .username(userDetailInfo.username())
+                    .password(userDetailInfo.password())
+                    .userRole(userDetailInfo.userRole().getRole())
+                    .name(userDetailInfo.name())
+                    .nickname(userDetailInfo.nickname())
+                    .enabled(userDetailInfo.isEnabled())
+                    .build();
+		} catch (UserException e) {
+            throw new UsernameNotFoundException("사용자를 찾을 수 없습니다: " + username);
+		}
     }
 }
