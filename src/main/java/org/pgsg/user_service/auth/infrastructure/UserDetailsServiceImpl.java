@@ -1,7 +1,7 @@
 package org.pgsg.user_service.auth.infrastructure;
 
 import lombok.RequiredArgsConstructor;
-import org.pgsg.user_service.user.domain.exception.UserException;
+import org.pgsg.user_service.user.domain.exception.UserServiceException;
 import org.pgsg.user_service.user.application.UserService;
 import org.pgsg.user_service.user.application.dto.info.LoginUserDetailInfo;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -25,7 +25,7 @@ public class UserDetailsServiceImpl implements UserDetailsService {
             // 공통모듈에서 제공하는 커스텀 UserDetailsImpl로 반환
             // 커스텀 UserDetailsImpl을 사용하기 위해 AuthenticationManager를 사용한 방식으로 전환함
             return loginDetails.toUserDetails();
-		} catch (UserException e) {
+		} catch (UserServiceException e) {
             throw new UsernameNotFoundException("사용자를 찾을 수 없습니다: " + username);
 		}
     }

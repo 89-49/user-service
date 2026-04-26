@@ -5,12 +5,12 @@ import lombok.extern.slf4j.Slf4j;
 import org.pgsg.user_service.user.application.dto.command.CreateUserCommand;
 import org.pgsg.user_service.user.application.dto.info.LoginUserDetailInfo;
 import org.pgsg.user_service.user.application.dto.info.UserDetailInfo;
+import org.pgsg.user_service.user.domain.exception.UserServiceException;
 import org.pgsg.user_service.user.domain.model.User;
 import org.pgsg.user_service.user.domain.model.UserRole;
 import org.pgsg.user_service.user.domain.repository.UserRepository;
 import org.pgsg.user_service.user.domain.service.RoleCheck;
 import org.springframework.dao.DataIntegrityViolationException;
-import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -28,13 +28,11 @@ public class UserService {
 
 	@Transactional
 	public UserDetailInfo createUser(CreateUserCommand createdUserCommand) {
-		// TODO: GlobalExceptionHandler 도입 시 회원 도메인 전용 커스텀 예외 클래스로 대체
 		if (userRepository.existsByUsername(createdUserCommand.username())) {
-			throw new IllegalArgumentException("이미 등록된 회원입니다.");
+			throw new UserServiceException("DuplicateUsernameException");
 		}
-		// TODO: GlobalExceptionHandler 도입 시 회원 도메인 전용 커스텀 예외 클래스로 대체
 		if (UserRole.isAdmin(createdUserCommand.userRole()) && !roleCheck.hasRole(UserRole.MASTER)) {
-			throw new AccessDeniedException("관리자를 등록할 권한이 없습니다.");
+			throw new UserServiceException("UnauthorizedRoleAssignmentException");
 		}
 
 		try {
@@ -42,7 +40,7 @@ public class UserService {
 
 			return UserDetailInfo.from(savedUser);
 		} catch (DataIntegrityViolationException e) {
-			throw new IllegalArgumentException("이미 등록된 회원입니다.");
+			throw new UserServiceException("DuplicateUsernameException");
 		}
 	}
 
@@ -50,7 +48,7 @@ public class UserService {
 	public UserDetailInfo getUserForAdmin(UUID userId) {
 		// TODO: GlobalExceptionHandler 도입 시 회원 도메인 전용 커스텀 예외 클래스로 대체
 		if (!roleCheck.hasRole(List.of(UserRole.MANAGER, UserRole.MASTER))) {
-			throw new AccessDeniedException("해당 리소스에 접근할 관리자 권한이 없습니다.");
+			throw new UserServiceException("AdminAccessDeniedException");
 		}
 
 		return getUser(userId);
@@ -60,7 +58,7 @@ public class UserService {
 	public UserDetailInfo getUser(UUID userId) {
 		User user = userRepository.findById(userId)
 				// TODO: GlobalExceptionHandler 도입 시 회원 도메인용 커스텀 예외 클래스로 대체
-				.orElseThrow(() -> new IllegalArgumentException("해당 ID를 가진 회원을 찾을 수 없습니다."));
+				.orElseThrow(() -> new UserServiceException("UserNotFoundException"));
 
 		return UserDetailInfo.from(user);
 	}
@@ -69,7 +67,7 @@ public class UserService {
 	public LoginUserDetailInfo getUserForAuth(UUID userId) {
 		User user = userRepository.findById(userId)
 				// TODO: GlobalExceptionHandler 도입 시 회원 도메인용 커스텀 예외 클래스로 대체
-				.orElseThrow(() -> new IllegalArgumentException("해당 ID를 가진 회원을 찾을 수 없습니다."));
+				.orElseThrow(() -> new UserServiceException("UserNotFoundException"));
 
 		return LoginUserDetailInfo.from(user);
 	}
@@ -78,7 +76,7 @@ public class UserService {
 	public LoginUserDetailInfo getUserForAuth(String username) {
 		User user = userRepository.findByUsername(username)
 				// TODO: GlobalExceptionHandler 도입 시 회원 도메인용 커스텀 예외 클래스로 대체
-				.orElseThrow(() -> new IllegalArgumentException("해당 username을 사용하는 회원을 찾을 수 없습니다."));
+				.orElseThrow(() -> new UserServiceException("UserNotFoundException"));
 
 		return LoginUserDetailInfo.from(user);
 	}
