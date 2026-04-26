@@ -6,6 +6,10 @@ spring:
     active: dev
     include: error
 
+  # UserAuthConfig와 공통모듈의 securityFilterChain 설정을 모두 적용할 때 사용
+  main:
+    allow-bean-definition-overriding: true
+
   config:
     import:
       - optional:configserver:${CONFIG_SERVER}
@@ -23,6 +27,11 @@ spring:
     init:
       mode: always
 
+  data:
+    redis:
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
+
   jpa:
     # configs에 포함된 설정이나, 초기 배포 시 설정 변경의 편의를 위해 환경변수를 사용
     # (.env 파일 내부의 값만 변경하면 됨)
@@ -34,6 +43,13 @@ spring:
 
 jwt:
   secret: ${JWT_SECRET}
+  access-token-expiration: ${JWT_ACCESS_TOKEN_EXPIRATION}
+  refresh-token-expiration: ${JWT_REFRESH_TOKEN_EXPIRATION}
+
 
 server:
   port: ${SERVER_PORT:18099}
+
+eureka:
+  client:
+    enabled: true

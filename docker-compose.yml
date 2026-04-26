@@ -1,11 +1,14 @@
 services:
-
   user-service:
+    container_name: user-service
     build:
       context: .
       dockerfile: Dockerfile
+      args:
+        - GPR_USER=${GPR_USER}
+        - GPR_TOKEN=${GPR_TOKEN}
     ports:
-      - "18099:8080"
+      - "18099:18099"
     env_file:
       - .env
     depends_on:
@@ -13,6 +16,8 @@ services:
         condition: service_healthy
       redis:
         condition: service_healthy
+    networks:
+      - pgsg-network
 
   db:
     image: postgres:17
@@ -29,6 +34,8 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
+    networks:
+      - pgsg-network
 
   redis:
     image: redis:7.2
@@ -39,6 +46,12 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
+    networks:
+      - pgsg-network
+
+networks:
+  pgsg-network:
+    external: true
 
 volumes:
   postgres-data:
