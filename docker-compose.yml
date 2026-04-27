@@ -9,7 +9,7 @@ services:
         - GPR_USER
         - GPR_TOKEN
     ports:
-      - "18099:18099"
+      - "${SERVER_PORT:-18099}:${SERVER_PORT:-18099}"
     env_file:
       - .env
     depends_on:
