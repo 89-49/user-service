@@ -4,9 +4,10 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-      args:
-        - GPR_USER=${GPR_USER}
-        - GPR_TOKEN=${GPR_TOKEN}
+      # 빌드 인자로 전달된 자격 증명 노출 방지
+      secrets:
+        - GPR_USER
+        - GPR_TOKEN
     ports:
       - "18099:18099"
     env_file:
@@ -17,7 +18,8 @@ services:
       redis:
         condition: service_healthy
     networks:
-      - pgsg-network
+      - pgsg-network # 게이트웨이 및 kafka와의 통신용 (외부 노출 통로)
+      # 기능 고도화 시 internal-net으로 내부 동기 통신망 분리 필요
 
   db:
     image: postgres:17
@@ -50,8 +52,16 @@ services:
       - pgsg-network
 
 networks:
+  # 공용/외부 통신망 - eureka 서비스 디스커버리, kafka, gateway와의 통신용
+  # 기능 고도화 시 internal-net으로 내부 동기 통신망 분리 필요
   pgsg-network:
     external: true
 
 volumes:
   postgres-data:
+
+secrets:
+  GPR_USER:
+    environment: GPR_USER
+  GPR_TOKEN:
+    environment: GPR_TOKEN
