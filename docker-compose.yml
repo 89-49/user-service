@@ -55,7 +55,9 @@ networks:
   # 공용/외부 통신망 - eureka 서비스 디스커버리, kafka, gateway와의 통신용
   # 기능 고도화 시 internal-net으로 내부 동기 통신망 분리 필요
   pgsg-network:
-    external: true
+    name: pgsg-network
+    driver: bridge
+    external: false
 
 volumes:
   postgres-data:
