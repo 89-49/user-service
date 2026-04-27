@@ -4,22 +4,28 @@ import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.Keys;
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.pgsg.config.security.UserDetailsImpl;
 import org.pgsg.user_service.auth.domain.JwtTokenProvider;
 import org.pgsg.user_service.auth.domain.model.TokenPair;
-import org.pgsg.user_service.user.domain.model.UserRole;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 
-import java.security.Key;
+import javax.crypto.SecretKey;
+import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 import java.util.Date;
 import java.util.UUID;
 
+@Slf4j
 @Component
 @RequiredArgsConstructor
 public class JwtTokenProviderImpl implements JwtTokenProvider {
 
+	private static final String ACCESS_TOKEN_PREFIX = "Bearer ";
+
     private final JwtProperties jwtProperties;
-    private Key key;
+    private SecretKey secretKey;
 
     /**
      * 의존성 주입 완료 후, 설정 파일(yml)에서 가져온 SecretKey를
@@ -27,8 +33,12 @@ public class JwtTokenProviderImpl implements JwtTokenProvider {
      */
     @PostConstruct
     protected void init() {
-        byte[] keyBytes = Base64.getDecoder().decode(jwtProperties.getSecret());
-        this.key = Keys.hmacShaKeyFor(keyBytes);
+		// 32자 이상의 아무 문자열이나 사용해도 JWT secret key로 변환 가능하도록, 먼저 base64로 인코딩한 후 키를 생성하도록 수정
+        String base64UrlEncoded = Base64.getUrlEncoder()
+                .encodeToString(jwtProperties.getSecret().getBytes(StandardCharsets.UTF_8));
+
+        byte[] keyBytes = Base64.getUrlDecoder().decode(base64UrlEncoded);
+        this.secretKey = Keys.hmacShaKeyFor(keyBytes);
     }
 
     /**
@@ -36,10 +46,11 @@ public class JwtTokenProviderImpl implements JwtTokenProvider {
      * 생성된 토큰들은 TokenPair VO 객체에 담겨 반환됩니다.
      */
     @Override
-    public TokenPair createTokenPair(UUID userId, UserRole role) {
-        String accessToken = createToken(userId, role, jwtProperties.getAccessTokenExpiration());
-        String refreshToken = createToken(userId, role, jwtProperties.getRefreshTokenExpiration());
-        return TokenPair.of(accessToken, refreshToken, jwtProperties.getAccessTokenExpiration());
+    public TokenPair createTokenPair(UserDetailsImpl userDetails) {
+        String accessToken = createAccessToken(userDetails, jwtProperties.getAccessTokenExpiration());
+        String refreshToken = createRefreshToken(userDetails, jwtProperties.getRefreshTokenExpiration());
+
+		return TokenPair.of(accessToken, refreshToken, jwtProperties.getAccessTokenExpiration());
     }
 
     /**
@@ -58,7 +69,7 @@ public class JwtTokenProviderImpl implements JwtTokenProvider {
     public boolean validateToken(String token) {
         try {
             Jwts.parser()
-                    .verifyWith((javax.crypto.SecretKey) key)
+                    .verifyWith(secretKey)
                     .build()
                     .parseSignedClaims(token);
             return true;
@@ -83,18 +94,43 @@ public class JwtTokenProviderImpl implements JwtTokenProvider {
     }
 
     /**
-     * 실제 JWT를 생성하는 공통 내부 메서드입니다.
+     * 실제 accessToken을 생성하는 공통 내부 메서드입니다.
+     * 로그인한 사용자의 인증 정보 중 사용자 식별용 uuid를 Subject에 넣고, 나머지 인증 정보를 Custom Claim에 추가하여 서명합니다.
+     */
+    private String createAccessToken(UserDetails userDetails, Long expiration) {
+        Date now = new Date();
+        UserDetailsImpl userDetailsInfo = (UserDetailsImpl) userDetails;
+		String accessToken = Jwts.builder()
+				.subject(userDetailsInfo.getUuid().toString())
+				.claim("username", userDetailsInfo.getUsername())
+				.claim("role", userDetailsInfo.getUserRole())
+				.claim("name", userDetailsInfo.getName())
+				.claim("nickname", userDetailsInfo.getNickname())
+				.claim("enabled", userDetailsInfo.isEnabled())
+				.issuedAt(now)
+				.expiration(new Date(now.getTime() + expiration))
+				.signWith(secretKey, Jwts.SIG.HS256)
+				.compact();
+
+		// 생성한 accessToken에 'Bearer '를 붙여서 반환
+		return ACCESS_TOKEN_PREFIX + accessToken;
+    }
+
+    /**
+     * 실제 refreshToken을 생성하는 메서드입니다.
      * 사용자 ID를 Subject에 넣고, 권한(role)을 Custom Claim으로 추가하여 서명합니다.
      */
-    private String createToken(UUID userId, UserRole role, Long expiration) {
+    private String createRefreshToken(UserDetails userDetails, Long expiration) {
         Date now = new Date();
-        return Jwts.builder()
-                .subject(userId.toString())
-                .claim("role", role.getRole())
-                .setIssuedAt(now)
-                .setExpiration(new Date(now.getTime() + expiration))
-                .signWith(key, SignatureAlgorithm.HS256)
-                .compact();
+		UserDetailsImpl userDetailsInfo = (UserDetailsImpl) userDetails;
+
+		return Jwts.builder()
+				.subject(userDetailsInfo.getUuid().toString())
+				.claim("role", userDetailsInfo.getUserRole())
+				.issuedAt(now)
+				.expiration(new Date(now.getTime() + expiration))
+				.signWith(secretKey, Jwts.SIG.HS256)
+				.compact();
     }
 
     /**
@@ -103,7 +139,7 @@ public class JwtTokenProviderImpl implements JwtTokenProvider {
      */
     private Claims parseClaims(String token) {
         return Jwts.parser()
-                .verifyWith((javax.crypto.SecretKey) key)
+                .verifyWith(secretKey)
                 .build()
                 .parseSignedClaims(token)
                 .getPayload();

@@ -1,14 +1,14 @@
 package org.pgsg.user_service.auth.domain;
 
+import org.pgsg.config.security.UserDetailsImpl;
 import org.pgsg.user_service.auth.domain.model.TokenPair;
-import org.pgsg.user_service.user.domain.model.UserRole;
 
 import java.util.UUID;
 
 public interface JwtTokenProvider {
 
     // 사용자 식별값과 권한 정보를 바탕으로 토큰 생성
-    TokenPair createTokenPair(UUID userId, UserRole role);
+    TokenPair createTokenPair(UserDetailsImpl userDetails);
 
     // 토큰에서 사용자 식별값(Subject) 추출
     UUID getUserId(String token);

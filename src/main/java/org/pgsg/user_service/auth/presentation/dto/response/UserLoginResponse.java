@@ -11,6 +11,6 @@ public class UserLoginResponse {
     private String refreshToken;
 
     public static UserLoginResponse from(AuthInfo info) {
-        return new UserLoginResponse("Bearer " + info.getAccessToken(), info.getRefreshToken());
+        return new UserLoginResponse(info.getAccessToken(), info.getRefreshToken());
     }
 }

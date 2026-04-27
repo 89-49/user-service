@@ -1,8 +1,10 @@
 package org.pgsg.user_service.user.infrastructure.security;
 
+import org.pgsg.common.util.SecurityUtil;
 import org.pgsg.user_service.user.domain.model.UserRole;
 import org.pgsg.user_service.user.domain.service.RoleCheck;
 import org.springframework.stereotype.Component;
+import org.springframework.util.StringUtils;
 
 import java.util.List;
 
@@ -16,8 +18,23 @@ public class SecurityRoleCheck implements RoleCheck {
 	}
 
 	@Override
-	public boolean hasRole(List<UserRole> userRoles) {
-		// TODO: 공통모듈의 SecurityUtil을 통해 가져온 사용자의 권한이 userRoles 중에 포함되어 있는지 확인하는 로직 구현
-		return true;
+	public boolean hasRole(List<UserRole> allowedUserRoles) {
+
+		return SecurityUtil.getCurrentUser()
+				.map(userDetails -> {
+					// 1. 현재 로그인한 사용자의 권한 불러오기
+					String currentUserRoleInfo = userDetails.getUserRole();
+					if (!StringUtils.hasText(currentUserRoleInfo)) {
+						return false;
+					}
+					// 2. 현재 로그인한 사용자에 매핑되는 UserRole enum 조회
+					UserRole currentUserRole = UserRole.find(currentUserRoleInfo);
+					if (currentUserRole == UserRole.MASTER) {
+						return true;
+					}
+					// 3. 현재 사용자의 권한이 파라미터에서 지정한 권한 중 하나에 해당되는지 확인
+					return allowedUserRoles.contains(currentUserRole);
+				})
+				.orElse(false);
 	}
 }

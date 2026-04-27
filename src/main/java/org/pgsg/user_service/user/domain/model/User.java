@@ -5,12 +5,13 @@ import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.SQLRestriction;
+import org.pgsg.common.domain.BaseEntity;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
-// TODO: 공통모듈 배포 시 BaseEntity 상속
 @Getter
 @Table(
 		name = "p_user",
@@ -19,8 +20,9 @@ import java.util.UUID;
 		}
 )
 @Entity
+@SQLRestriction("deleted_at IS NULL")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class User {
+public class User extends BaseEntity {
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.UUID)
@@ -67,8 +69,7 @@ public class User {
 	}
 
 	public boolean isEnabled() {
-		// TODO: 공통모듈 배포 완료 이후 User 엔티티가 BaseEntity를 상속받을 시 deletedAt == null로 조건 수정
-		return true;
+		return this.deletedAt == null;
 	}
 
 	// TODO: 채팅가능시간 관련 세부 로직 추가(인증 로직 구현 이후 회원 관련 기능 구현 시)
