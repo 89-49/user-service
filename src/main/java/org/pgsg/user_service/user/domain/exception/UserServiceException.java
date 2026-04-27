@@ -11,4 +11,9 @@ public class UserServiceException extends CustomException {
 	public UserServiceException(String errorName, String field) {
 		super(errorName, field);
 	}
+
+	public UserServiceException(String errorName, Throwable cause) {
+		super(errorName, null);
+		this.initCause(cause);
+	}
 }

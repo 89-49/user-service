@@ -40,7 +40,11 @@ public class UserService {
 
 			return UserDetailInfo.from(savedUser);
 		} catch (DataIntegrityViolationException e) {
-			throw new UserServiceException("DuplicateUsernameException");
+			String message = e.getMostSpecificCause().getMessage();
+			if (message != null && message.contains("uk_user_username")) {
+				throw new UserServiceException("DuplicateUsernameException", e);
+			}
+			throw e;
 		}
 	}
 
