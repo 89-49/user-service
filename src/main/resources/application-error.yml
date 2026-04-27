@@ -29,3 +29,8 @@ error:
       code: "U006"
       message: "이미 등록된 회원입니다."
       status: 409
+
+    UserRoleNotFoundException:
+      code: "U007"
+      message: "해당하는 회원권한을 찾을 수 없습니다."
+      status: 404

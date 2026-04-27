@@ -2,6 +2,7 @@ package org.pgsg.user_service.user.domain.model;
 
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
+import org.pgsg.user_service.user.domain.exception.UserServiceException;
 
 import java.util.Arrays;
 
@@ -33,7 +34,7 @@ public enum UserRole {
 		return Arrays.stream(UserRole.values())
 				.filter(role -> role.isMatched(trimmedInfo))
 				.findAny()
-				.orElseThrow(() -> new IllegalArgumentException("해당하는 회원권한을 찾을 수 없습니다: " + userRoleInfo));
+				.orElseThrow(() -> new UserServiceException("UserRoleNotFoundException"));
 	}
 
 	private boolean isMatched(String roleInfo) {
