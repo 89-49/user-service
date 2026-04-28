@@ -1,4 +1,4 @@
-package org.pgsg.user_service.auth.infrastructure;
+package org.pgsg.user_service.auth.infrastructure.redis;
 
 import lombok.RequiredArgsConstructor;
 import org.pgsg.user_service.auth.domain.TokenRepository;

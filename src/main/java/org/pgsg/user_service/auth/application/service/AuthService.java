@@ -10,7 +10,7 @@ import org.pgsg.user_service.auth.domain.JwtTokenProvider;
 import org.pgsg.user_service.auth.domain.TokenRepository;
 import org.pgsg.user_service.auth.domain.UserAuthenticator;
 import org.pgsg.user_service.auth.domain.model.TokenPair;
-import org.pgsg.user_service.auth.infrastructure.JwtProperties;
+import org.pgsg.user_service.auth.infrastructure.security.JwtProperties;
 import org.pgsg.user_service.user.application.UserService;
 import org.pgsg.user_service.user.application.dto.command.CreateUserCommand;
 import org.pgsg.user_service.user.application.dto.info.UserDetailInfo;

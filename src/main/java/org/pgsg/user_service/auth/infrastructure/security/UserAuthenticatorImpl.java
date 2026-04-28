@@ -1,4 +1,4 @@
-package org.pgsg.user_service.auth.infrastructure;
+package org.pgsg.user_service.auth.infrastructure.security;
 
 import lombok.RequiredArgsConstructor;
 import org.pgsg.config.security.UserDetailsImpl;
