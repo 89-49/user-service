@@ -1,3 +1,6 @@
+server:
+  port: ${SERVER_PORT:18099}
+
 spring:
   application:
     name: user-service
@@ -6,23 +9,33 @@ spring:
     active: dev
     include: error
 
-  # UserAuthConfig와 공통모듈의 securityFilterChain 설정을 모두 적용할 때 사용
+  # [필수 1] 설정 로드 순서 (중요)
+  # .env를 먼저 읽어야 CONFIG_SERVER 주소를 확보하여 접속할 수 있습니다.(배포 환경)
+  config:
+    import:
+      - "optional:file:.env[.properties]"             # 1. 로컬 프로젝트의 환경변수 로드
+      - "optional:configserver:${CONFIG_SERVER}"      # 2. 원격 설정 로드
+
+  # [필수 2] 로컬 우선순위 설정
+  # 로컬 .env나 환경변수가 원격 Config Server의 환경변수 값을 덮어쓰도록 허용합니다.
+  cloud:
+    config:
+      allow-override: true
+      override-none: true
+      override-system-properties: false
+
+  # [필수 3] 빈 중복 정의 허용
+  # Security 및 Config 클래스 간의 빈 충돌을 방지합니다.
   main:
     allow-bean-definition-overriding: true
 
-  config:
-    import:
-      - optional:configserver:${CONFIG_SERVER}
-      - optional:file:.env[.properties]   # user-service 프로젝트 내 .env 파일의 값을 우선 주입
-
-  # Config Server 플레이스홀더 해석 문제로 로컬에서 직접 설정
+  # config-server에 명시적으로 설정되어 있으나, 배포 환경에서 환경변수값을 변경하기 쉽도록 추가함
   datasource:
     driver-class-name: org.postgresql.Driver
     username: ${DB_USERNAME}
     password: ${DB_PASSWORD}
     url: ${DB_URL}
 
-  # 테이블 생성 후 data.sql 실행용(회원에서는 MASTER 권한 계정을 미리 등록하기 위해 필요)
   sql:
     init:
       mode: always
@@ -41,14 +54,10 @@ spring:
     # JPA가 준비된 이후 src/main/resources/data.sql 파일의 MASTER 등록 쿼리 실행
     defer-datasource-initialization: true
 
+# [필수 4] 보안 설정
+# JWT 관련 값은 보안상 로컬 .env에서 관리하는 것이 가장 안전합니다.
 jwt:
   secret: ${JWT_SECRET}
-  access-token-expiration: ${JWT_ACCESS_TOKEN_EXPIRATION}
-  refresh-token-expiration: ${JWT_REFRESH_TOKEN_EXPIRATION}
-
-
-server:
-  port: ${SERVER_PORT:18099}
 
 eureka:
   client:

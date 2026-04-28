@@ -138,23 +138,71 @@ cp .env.example .env
 
 `.env` 파일을 열어 아래 항목을 실제 값으로 수정합니다.
 
+<details>
+
+<summary> user-service 실행용 환경변수 설정(.env.example 파일)</summary>
+
 ```env
 # DB
-DB_URL=jdbc:postgresql://db:5432/userdb
 DB_USERNAME=postgres
 DB_PASSWORD=your_password
 
-# Redis
-REDIS_HOST=redis
-REDIS_PORT=6379
+# 로컬 실행용(로컬, 배포용 설정 중 하나는 주석 처리할 것)
+DB_URL=jdbc:postgresql://localhost:5432/userdb
 
-# JWT — 256비트 이상 랜덤 문자열 사용 권장
-JWT_SECRET=your-very-long-secret-key-here
+# docker 기반 배포용
+DB_URL=jdbc:postgresql://db:5432/userdb
+
+# Redis
+REDIS_PORT=6379
+# 로컬 실행용
+REDIS_HOST=localhost
+
+# docker 기반 배포용
+REDIS_HOST=redis
+
+
+# JWT — 256비트 이상 랜덤 문자열 권장
+JWT_SECRET=CHANGE_ME_BASE64_32_BYTES_MINIMUM_STRING
 JWT_ACCESS_EXPIRATION=1800000
 JWT_REFRESH_EXPIRATION=604800000
+
+
+# Config-Server
+CONFIG_SERVER=http://localhost:13100
+
+
+# JPA 설정(배포 환경에서 초기 구동 완료 직후 환경변수값 수정 필요)
+# 배포 시 ddl-auto는 validate, show-sql은 false로 변경
+SPRING_JPA_HIBERNATE_DDL_AUTO=update
+SPRING_JPA_SHOW_SQL=true
+
+
+# server port
+SERVER_PORT=도메인_서비스별_포트번호
+
+
+# 배포 환경에서도 공통 모듈을 적용하기 위해 Dockerfile에 추가해야 할 환경변수
+GPR_USER=GitHub_ID
+GPR_TOKEN=GitHub_Personal_Access_Token(PAT)
+
+
+# eureka server 초기 주소
+# 로컬 실행용
+EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://localhost:8761/eureka/
+
+# docker 기반 실행용(배포용)
+EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://eureka-server:8761/eureka/
+
+# kafka 설정(로컬 실행용 - 세팅은 추후 진행 예정)
+KAFKA_BOOTSTRAP_SERVERS=127.0.0.1:9092
 ```
 
+</details>
+
+
 > **주의**: `JWT_SECRET`은 반드시 설정해야 합니다. 값이 없으면 애플리케이션이 시작되지 않습니다.
+> 일부 환경변수의 경우, 로컬용과 배포용 값이 별도로 구분됩니다.
 
 ### 3. Docker Compose 실행
 
@@ -171,17 +219,78 @@ docker compose up
 
 ---
 
+## 배포 환경 실행 및 설정 조정 (Deployment & Overrides)
+
+원격 서버에 배포했을 경우에는 보안 및 데이터 보호를 위해 `.env` 파일의 내용을 직접 수정하지 않고, 실행 시점에 환경 변수를 주입하여 설정을 조정하는 방식을 권장합니다.
+
+### 1. 주요 조정 항목 (핵심 환경변수)
+배포 시 주로 변경하게 되는 주요 설정입니다:
+- `SERVER_PORT`: 서비스 포트 번호 (예: `8080`)
+- `DB_URL`: 배포용 DB 연결 정보 (예: `jdbc:postgresql://db:5432/userdb` - 포트 변경 시 `5432` 수정)
+- `REDIS_HOST`: 배포용 Redis 서버 주소 (예: `redis`)
+- `REDIS_PORT`: Redis 포트 번호 (예: `6379`)
+- `EUREKA_CLIENT_SERVICEURL_DEFAULTZONE`: 유레카 서버 주소
+- `SPRING_JPA_HIBERNATE_DDL_AUTO`: `validate` 또는 `none` (데이터 유실 방지)
+- `SPRING_JPA_SHOW_SQL`: `false` (로그 최적화)
+
+### 2. Docker Compose로 실행 (가장 간편함)
+기본 `.env`의 설정은 유지하면서, 특정 값만 덮어씌워 한 번에 빌드 및 실행하는 명령어입니다.
+
+```bash
+SERVER_PORT=8080 \
+DB_URL=jdbc:postgresql://db:5432/userdb \
+REDIS_HOST=redis \
+REDIS_PORT=6379 \
+EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://eureka-server:8761/eureka/ \
+SPRING_JPA_HIBERNATE_DDL_AUTO=validate \
+SPRING_JPA_SHOW_SQL=false \
+docker compose up -d --build
+```
+
+### 3. Docker 개별 명령어로 실행 (개별 컨테이너 관리 시)
+`.env` 파일에 GitHub 자격 증명이 포함된 경우, 아래 순서대로 실행합니다.
+
+```bash
+# 1. 시크릿을 참조하여 이미지 빌드
+export $(grep -v '^#' .env | xargs)
+docker build --secret id=GPR_USER,env=GPR_USER --secret id=GPR_TOKEN,env=GPR_TOKEN -t user-service .
+
+# 2. 배포용 설정을 주입하여 컨테이너 실행
+# [주의] -e SERVER_PORT와 -p의 내부 포트 번호(오른쪽)는 반드시 일치해야 합니다.
+# -e SERVER_PORT=8080 \    # 내부 앱이 사용할 포트 지정
+# -p 8080:8080 \           # 외부포트:내부포트 매핑 (내부 포트는 위 SERVER_PORT와 일치)
+docker run -d \
+  --name user-service \
+  --env-file .env \
+  -e SERVER_PORT=8080 \
+  -e DB_URL=jdbc:postgresql://db:5432/userdb \
+  -e REDIS_HOST=redis \
+  -e REDIS_PORT=6379 \
+  -e EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://eureka-server:8761/eureka/ \
+  -e SPRING_JPA_HIBERNATE_DDL_AUTO=validate \
+  -e SPRING_JPA_SHOW_SQL=false \
+  -p 8080:8080 \
+  --network pgsg-network \
+  user-service
+```
+*※ `-e SERVER_PORT` 옵션은 `application.yml`의 기본 설정을 덮어쓰며, `-p` 옵션과 함께 사용하여 외부 접속 경로를 완성합니다.*
+*※ `-e` 옵션은 `--env-file`보다 우선순위가 높아 파일 수정 없이도 설정 변경이 가능합니다.*
+
+---
+
 ## 컨테이너 구성
 
 | 서비스          | 이미지         | 포트    | 설명               |
 |--------------|-------------|-------|------------------|
 | user-service | 로컬 빌드       | 18099 | 인증 서버            |
-| db           | postgres:16 | 5432  | PostgreSQL       |
+| db           | postgres:17 | 5432  | PostgreSQL       |
 | redis        | redis:7.2   | 6379  | RefreshToken 저장소 |
 
 ---
 
 ## 주요 명령어
+
+> 주의사항: eureka-server가 생성한 네트워크에 user-service 등의 도메인 서비스가 합류하는 구조이므로 미리 eureka-service가 실행되어야 함.
 
 ```bash
 # 전체 컨테이너 시작 (백그라운드)
