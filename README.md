@@ -155,7 +155,7 @@ DB_URL=jdbc:postgresql://db:5432/userdb
 
 # Redis
 REDIS_PORT=6379
-# 로컬 실행용(로컬, 배포용 설정 중 하나는 주석 처리할 것)
+# 로컬 실행용
 REDIS_HOST=localhost
 
 # docker 기반 배포용
@@ -164,12 +164,12 @@ REDIS_HOST=redis
 
 # JWT — 256비트 이상 랜덤 문자열 권장
 JWT_SECRET=CHANGE_ME_BASE64_32_BYTES_MINIMUM_STRING
-JWT_ACCESS_TOKEN_EXPIRATION=1800000
-JWT_REFRESH_TOKEN_EXPIRATION=604800000
+JWT_ACCESS_EXPIRATION=1800000
+JWT_REFRESH_EXPIRATION=604800000
 
 
 # Config-Server
-CONFIG_SERVER=localhost:13100
+CONFIG_SERVER=http://localhost:13100
 
 
 # JPA 설정(배포 환경에서 초기 구동 완료 직후 환경변수값 수정 필요)
@@ -188,13 +188,13 @@ GPR_TOKEN=GitHub_Personal_Access_Token(PAT)
 
 
 # eureka server 초기 주소
-# 로컬 실행용(로컬, 배포용 설정 중 하나는 주석 처리할 것)
+# 로컬 실행용
 EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://localhost:8761/eureka/
 
 # docker 기반 실행용(배포용)
 EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://eureka-server:8761/eureka/
 
-# kafka 설정(로컬용)
+# kafka 설정(로컬 실행용 - 세팅은 추후 진행 예정)
 KAFKA_BOOTSTRAP_SERVERS=127.0.0.1:9092
 ```
 
