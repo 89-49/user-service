@@ -8,6 +8,8 @@ services:
       secrets:
         - GPR_USER
         - GPR_TOKEN
+    environment:
+      - "SERVER_PORT=${SERVER_PORT:-18099}"
     ports:
       - "${SERVER_PORT:-18099}:${SERVER_PORT:-18099}"
     env_file:
@@ -56,8 +58,7 @@ networks:
   # 기능 고도화 시 internal-net으로 내부 동기 통신망 분리 필요
   pgsg-network:
     name: pgsg-network
-    driver: bridge
-    external: false
+    external: true
 
 volumes:
   postgres-data:
