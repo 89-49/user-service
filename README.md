@@ -290,6 +290,8 @@ docker run -d \
 
 ## 주요 명령어
 
+> 주의사항: eureka-server가 생성한 네트워크에 user-service 등의 도메인 서비스가 합류하는 구조이므로 미리 eureka-service가 실행되어야 함.
+
 ```bash
 # 전체 컨테이너 시작 (백그라운드)
 docker compose up -d
