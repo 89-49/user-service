@@ -178,8 +178,9 @@ SPRING_JPA_HIBERNATE_DDL_AUTO=update
 SPRING_JPA_SHOW_SQL=true
 
 
-# server port
+# server port, 유레카 클라이언트 호스트명
 SERVER_PORT=도메인_서비스별_포트번호
+HOSTNAME=localhost
 
 
 # 배포 환경에서도 공통 모듈을 적용하기 위해 Dockerfile에 추가해야 할 환경변수
@@ -189,12 +190,12 @@ GPR_TOKEN=GitHub_Personal_Access_Token(PAT)
 
 # eureka server 초기 주소
 # 로컬 실행용
-EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://localhost:8761/eureka/
+EUREKA_SERVER_URL=http://localhost:8761/eureka/
 
 # docker 기반 실행용(배포용)
-EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://eureka-server:8761/eureka/
+EUREKA_SERVER_URL=http://eureka-server:8761/eureka/
 
-# kafka 설정(로컬 실행용 - 세팅은 추후 진행 예정)
+# kafka 설정(로컬 실행용)
 KAFKA_BOOTSTRAP_SERVERS=127.0.0.1:9092
 ```
 
