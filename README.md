@@ -257,17 +257,19 @@ docker build --secret id=GPR_USER,env=GPR_USER --secret id=GPR_TOKEN,env=GPR_TOK
 
 # 2. 배포용 설정을 주입하여 컨테이너 실행
 # [주의] -e SERVER_PORT와 -p의 내부 포트 번호(오른쪽)는 반드시 일치해야 합니다.
+# -e SERVER_PORT=8080 \    # 내부 앱이 사용할 포트 지정
+# -p 8080:8080 \           # 외부포트:내부포트 매핑 (내부 포트는 위 SERVER_PORT와 일치)
 docker run -d \
   --name user-service \
   --env-file .env \
-  -e SERVER_PORT=8080 \    # 내부 앱이 사용할 포트 지정
+  -e SERVER_PORT=8080 \
   -e DB_URL=jdbc:postgresql://db:5432/userdb \
   -e REDIS_HOST=redis \
   -e REDIS_PORT=6379 \
   -e EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://eureka-server:8761/eureka/ \
   -e SPRING_JPA_HIBERNATE_DDL_AUTO=validate \
   -e SPRING_JPA_SHOW_SQL=false \
-  -p 8080:8080 \           # 외부포트:내부포트 매핑 (내부 포트는 위 SERVER_PORT와 일치)
+  -p 8080:8080 \
   --network pgsg-network \
   user-service
 ```
