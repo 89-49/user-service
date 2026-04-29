@@ -5,7 +5,8 @@ import jakarta.servlet.http.HttpServletRequestWrapper;
 
 import java.util.*;
 
-// TODO: 현재 임시로 구현한 내부 로직을 나중에 게이트웨이로 이전
+// TODO: 게이트웨이로 JWT 인증 필터 분리 완료 시 deprecated 처리
+// 게이트웨이의 JWT 인증 필터를 추가하기 전까지만 임시 사용할 Wrapper
 public class HttpRequestHeaderWrapper extends HttpServletRequestWrapper {
 
 	private final Map<String, String> headerMap;
