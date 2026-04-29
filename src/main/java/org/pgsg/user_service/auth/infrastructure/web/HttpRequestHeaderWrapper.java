@@ -10,6 +10,7 @@ import java.util.stream.Collectors;
 // 게이트웨이의 JWT 인증 필터를 추가하기 전까지만 임시 사용할 Wrapper
 public class HttpRequestHeaderWrapper extends HttpServletRequestWrapper {
 
+	// Authorization 헤더 없이 서버가 인증을 마쳤다는 증표로 사용되는 내부 헤더 적용 -> 서버 권한 사칭 시도로 해석
 	private static final String FORBIDDEN_HEADER_PREFIX = "x-user-";
 
 	private final Map<String, String> headerMap;
@@ -58,8 +59,10 @@ public class HttpRequestHeaderWrapper extends HttpServletRequestWrapper {
 		// 원본 요청에서의 헤더 중복 제거
 		Set<String> names = Collections.list(super.getHeaderNames()).stream()
 				.map(String::toLowerCase)
-				.filter(headerName
-						-> !headerMap.containsKey(headerName) && !headerName.startsWith(FORBIDDEN_HEADER_PREFIX))
+				.filter(headerName ->
+						!headerMap.containsKey(headerName) && 			// 직접 추가한 요청 헤더가 아니면서
+						!headerName.startsWith(FORBIDDEN_HEADER_PREFIX)	//금지된 접두사로 시작하는 헤더가 아님
+				)
 				.collect(Collectors.toCollection(LinkedHashSet::new));
 
 		// 새로 추가된 헤더들을 중복 없이 일괄 저장
