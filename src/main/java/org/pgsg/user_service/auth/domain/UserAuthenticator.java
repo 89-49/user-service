@@ -5,4 +5,8 @@ import org.pgsg.config.security.UserDetailsImpl;
 public interface UserAuthenticator {
 
 	UserDetailsImpl verify(String username, String rawPassword);
+
+	UserDetailsImpl verifyToken(String accessToken, String refreshToken);
+
+	void checkBlacklist(String accessToken);
 }
