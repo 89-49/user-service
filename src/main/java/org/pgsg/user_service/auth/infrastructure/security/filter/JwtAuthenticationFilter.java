@@ -1,6 +1,7 @@
 package org.pgsg.user_service.auth.infrastructure.security.filter;
 
 import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.JwtException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -35,23 +36,32 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
 	@Override
 	protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
-		// 1. 요청에 포함된 Authorization 헤더 검증
-		String accessToken = resolveToken(request);
-		if (accessToken == null || !jwtTokenProvider.validateToken(accessToken)) {
-			log.info("[JwtFilter] 유효한 토큰이 없음 - 다음 필터로 위임");
-			// Authorization 헤더 없이 X-User-* 헤더만 보낸 경우 현재 요청 헤더에 포함된 X-User-* 헤더를 모두 비움
+		try {
+			// 1. 요청에 포함된 Authorization 헤더 검증
+			String accessToken = resolveToken(request);
+			if (accessToken == null || !jwtTokenProvider.validateToken(accessToken)) {
+				log.info("[JwtFilter] 유효한 토큰이 없음 - 다음 필터로 위임");
+				// Authorization 헤더 없이 X-User-* 헤더만 보낸 경우 현재 요청 헤더에 포함된 X-User-* 헤더를 모두 비움
+				filterChain.doFilter(new HttpRequestHeaderWrapper(request), response);
+				return;
+			}
+
+			// 2. 사용자 정보 추출: 토큰에서 사용자 정보 추출
+			Claims claims = jwtTokenProvider.parseClaims(accessToken);
+
+			// 3. 토큰에서 추출한 정보를 요청 헤더에 저장
+			HttpServletRequest requestWrapper = createWrapperWithHeaders(request, claims);
+
+			// 4. 다음 필터로 위임
+			log.info("[JwtFilter] 토큰 claims 파싱 완료 - 다음 필터로 위임");
+			filterChain.doFilter(requestWrapper, response);
+		} catch (JwtException | IllegalArgumentException e) {
+			log.info("[JwtFilter] 토큰 claims 파싱 실패 - 다음 필터로 위임");
 			filterChain.doFilter(new HttpRequestHeaderWrapper(request), response);
-			return;
+		} catch (ServletException | IOException e) {
+			log.warn("[JwtFilter] 토큰 claims 파싱 실패 - 인증 정보 헤더 제거 후 다음 필터로 위임");
+			filterChain.doFilter(new HttpRequestHeaderWrapper(request), response);
 		}
-
-		// 2. 사용자 정보 추출: 토큰에서 사용자 정보 추출
-		Claims claims = jwtTokenProvider.parseClaims(accessToken);
-
-		// 3. 토큰에서 추출한 정보를 요청 헤더에 저장
-		HttpServletRequest requestWrapper = createWrapperWithHeaders(request, claims);
-
-		// 4. 다음 필터로 위임
-		filterChain.doFilter(requestWrapper, response);
 	}
 
 	private String resolveToken(HttpServletRequest request) {
@@ -77,7 +87,8 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 		requestWrapper.addHeader(HEADER_USER_NICKNAME, encodeValue(claims.get("nickname", String.class)));
 
 		// Enabled 여부는 boolean값을 string 타입으로 변환한 값을 저장
-		requestWrapper.addHeader(HEADER_ENABLED, String.valueOf(claims.get("enabled", Boolean.class)));
+		Boolean enabled = claims.get("enabled", Boolean.class);
+		requestWrapper.addHeader(HEADER_ENABLED, enabled != null ? enabled.toString() : "false");
 
 		return requestWrapper;
 	}
