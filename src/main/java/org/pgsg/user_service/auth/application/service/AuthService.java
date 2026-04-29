@@ -38,7 +38,7 @@ public class AuthService {
 	@Transactional
 	public void logout(UUID userId, String accessToken) {
 		tokenService.deleteRefreshToken(userId);
-		tokenService.addToBlacklist(accessToken);
+		tokenService.addToBlacklist(userId, accessToken);
 	}
 
 	@Transactional
