@@ -1,5 +1,6 @@
 package org.pgsg.user_service.auth.domain;
 
+import io.jsonwebtoken.Claims;
 import org.pgsg.config.security.UserDetailsImpl;
 import org.pgsg.user_service.auth.domain.model.TokenPair;
 
@@ -18,4 +19,6 @@ public interface JwtTokenProvider {
 
     // 만료된 토큰에서도 클레임을 추출 (재발급 로직용)
     String getSubjectFromExpiredAccessToken(String accessToken);
+
+    Claims parseClaims(String token);
 }

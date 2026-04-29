@@ -2,6 +2,7 @@ package org.pgsg.user_service.auth.infrastructure.security;
 
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.Keys;
+import io.jsonwebtoken.security.SignatureException;
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -73,9 +74,16 @@ public class JwtTokenProviderImpl implements JwtTokenProvider {
                     .build()
                     .parseSignedClaims(token);
             return true;
-        } catch (JwtException | IllegalArgumentException e) {
+        } catch (ExpiredJwtException e) {
+			log.info("만료된 JWT 토큰입니다.");
             return false;
-        }
+        } catch (SignatureException | MalformedJwtException e) {
+			log.warn("잘못된 JWT 서명입니다.");
+			return false;
+		} catch (UnsupportedJwtException | IllegalArgumentException e) {
+			log.warn("지원되지 않는 JWT 토큰이거나 잘못된 JWT 토큰입니다.");
+			return false;
+		}
     }
 
     /**
@@ -137,7 +145,7 @@ public class JwtTokenProviderImpl implements JwtTokenProvider {
      * 토큰을 복호화(파싱)하여 내부의 데이터 묶음인 Claims를 추출합니다.
      * 서명 검증을 포함하며, 라이브러리 버전에 따라 parseSignedClaims와 getPayload를 사용합니다.
      */
-    private Claims parseClaims(String token) {
+    public Claims parseClaims(String token) {
         return Jwts.parser()
                 .verifyWith(secretKey)
                 .build()
