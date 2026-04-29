@@ -69,7 +69,7 @@ public class TokenService {
 			String normalizedToken = JwtUtils.normalizeToken(accessToken);
 			long remainingTime = tokenProvider.getRemainingTime(normalizedToken);
 			if (remainingTime > 0) {
-				tokenRepository.saveBlacklist(userId, accessToken, Duration.ofMillis(remainingTime));
+				tokenRepository.saveBlacklist(userId, normalizedToken, Duration.ofMillis(remainingTime));
 			}
 		} catch (JwtException | IllegalArgumentException e) {
 			log.error("[TokenService] 블랙리스트 등록 중 오류 발생 (토큰 파싱 실패 등): {}", e.getMessage());
@@ -104,6 +104,6 @@ public class TokenService {
 		// 토큰에서 사용자 ID를 추출하여 해당 키로 저장된 토큰이 있는지 확인
 		String normalizedToken = JwtUtils.normalizeToken(accessToken);
 		UUID userId = UUID.fromString(tokenProvider.getSubjectFromExpiredAccessToken(normalizedToken));
-		return tokenRepository.existsByBlacklist(userId, accessToken);
+		return tokenRepository.existsByBlacklist(userId, normalizedToken);
 	}
 }
