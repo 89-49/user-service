@@ -4,6 +4,7 @@ import java.util.Optional;
 import java.time.Duration;
 import java.util.UUID;
 
+// TODO: user-service 내부에 유지 -> 토큰의 생명주기는 오직 user-service에서만 관리
 public interface TokenRepository {
 
     // 토큰 저장

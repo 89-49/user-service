@@ -9,6 +9,7 @@ import java.time.Duration;
 import java.util.Optional;
 import java.util.UUID;
 
+// TODO: user-service 내부에 유지 -> 토큰 저장용 redis는 오직 user-service만 사용
 @Repository
 @RequiredArgsConstructor
 public class RedisTokenRepository implements TokenRepository {
