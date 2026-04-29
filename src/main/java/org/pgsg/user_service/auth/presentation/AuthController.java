@@ -1,5 +1,5 @@
 package org.pgsg.user_service.auth.presentation;
-
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.pgsg.config.security.UserDetailsImpl;
@@ -7,14 +7,13 @@ import org.pgsg.user_service.auth.application.dto.info.AuthInfo;
 import org.pgsg.user_service.auth.application.dto.info.SignupInfo;
 import org.pgsg.user_service.auth.application.service.AuthService;
 import org.pgsg.user_service.auth.presentation.dto.request.UserLoginRequest;
+import org.pgsg.user_service.auth.presentation.dto.request.UserReissueRequest;
 import org.pgsg.user_service.auth.presentation.dto.request.UserSignupRequest;
 import org.pgsg.user_service.auth.presentation.dto.response.UserLoginResponse;
 import org.pgsg.user_service.auth.presentation.dto.response.UserSignupResponse;
+import org.springframework.http.HttpHeaders;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/v1/auth")
@@ -33,9 +32,10 @@ public class AuthController {
     }
 
     @PostMapping("/logout")
-    public void logout(@AuthenticationPrincipal UserDetailsImpl userDetails) {
+    public void logout(@AuthenticationPrincipal UserDetailsImpl userDetails, HttpServletRequest request) {
+        String accessToken = request.getHeader(HttpHeaders.AUTHORIZATION);
         // 인증 객체에서 UUID를 꺼내 서비스에 로그아웃 요청
-        authService.logout(userDetails.getUuid());
+        authService.logout(userDetails.getUuid(), accessToken);
     }
 
     @PostMapping("/signup")
@@ -43,5 +43,12 @@ public class AuthController {
         SignupInfo info = authService.signup(userSignupRequest.toCommand());
 
         return UserSignupResponse.from(info);
+    }
+
+    @PostMapping("/reissue")
+    public UserLoginResponse reissue(@Valid @RequestBody UserReissueRequest userReissueRequest) {
+        AuthInfo info = authService.reissue(userReissueRequest.toCommand());
+
+        return UserLoginResponse.from(info);
     }
 }
