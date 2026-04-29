@@ -23,10 +23,8 @@ public class TokenService {
 	private final TokenRepository tokenRepository;
 	private final JwtProperties jwtProperties;
 
-	/**
-	 * 사용자의 인증 정보를 바탕으로 토큰 쌍(Access/Refresh)을 발급하고,
-	 * Refresh Token을 저장소(Redis)에 기록합니다.
-	 */
+	// 토큰 발행/검증
+
 	public AuthInfo issueTokenPair(UserDetailsImpl userDetails) {
 		TokenPair tokenPair = tokenProvider.createTokenPair(userDetails);
 
@@ -39,24 +37,25 @@ public class TokenService {
 		return AuthInfo.from(tokenPair);
 	}
 
-	/**
-	 * Access Token(만료)과 Refresh Token(유효) 쌍을 검증하고 사용자 ID를 반환합니다.
-	 */
 	public UUID verifyTokenPair(String accessToken, String refreshToken) {
-		// 1. 만료된 Access Token에서 사용자 ID 추출
-		UUID userIdFromAccess = UUID.fromString(tokenProvider.getSubjectFromExpiredAccessToken(accessToken));
+		try {
+			// 1. 만료된 Access Token에서 사용자 ID 추출
+			UUID userIdFromAccess = UUID.fromString(tokenProvider.getSubjectFromExpiredAccessToken(accessToken));
 
-		// 2. Refresh Token 유효성 검증 및 교차 검증
-		UUID userIdFromRefresh = Optional.of(refreshToken)
-				.filter(tokenProvider::validateToken)
-				.map(tokenProvider::getUserId)
-				.filter(userIdFromAccess::equals) // 교차 검증
-				.orElseThrow(() -> new UserServiceException("UnauthorizedException"));
+			// 2. Refresh Token 유효성 검증 및 교차 검증 -> accessToken의 userId와 refreshToken의 userId가 서로 같을 때만 유효
+			UUID userIdFromRefresh = Optional.of(refreshToken)
+					.filter(tokenProvider::validateToken)
+					.map(tokenProvider::getUserId)
+					.filter(userIdFromAccess::equals) // 교차 검증
+					.orElseThrow(() -> new UserServiceException("UnauthorizedException"));
 
-		// 3. 저장소(Redis) 일치 여부 확인
-		validateRefreshToken(userIdFromRefresh, refreshToken);
+			// 3. 저장소(Redis) 일치 여부 확인
+			validateRefreshToken(userIdFromRefresh, refreshToken);
 
-		return userIdFromRefresh;
+			return userIdFromRefresh;
+		} catch (NullPointerException e) {
+			throw new UserServiceException("UnauthorizedException", e);
+		}
 	}
 
 

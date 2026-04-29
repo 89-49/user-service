@@ -32,7 +32,7 @@ public class UserAuthConfig implements SecurityConfig {
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
 
         http.authorizeHttpRequests(auth -> auth
-                .requestMatchers("/api/v1/auth/login", "/api/v1/auth/signup").permitAll() // 로그인, 회원가입 허용
+                .requestMatchers("/api/v1/auth/login", "/api/v1/auth/signup", "/api/v1/auth/reissue").permitAll() // 로그인, 회원가입 허용
                 .requestMatchers("/internal/v1/users/**").permitAll()   // 추후 로그인용 회원정보 조회가 필요할 경우를 고려
             )
             .addFilterBefore(

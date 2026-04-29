@@ -60,7 +60,7 @@ public class JwtTokenProvider implements TokenProvider {
      */
     @Override
     public UUID getUserId(String token) {
-        return UUID.fromString(parseClaims(token).getSubject());
+        return UUID.fromString(parseClaims(normalizeToken(token)).getSubject());
     }
 
     /**
@@ -95,7 +95,7 @@ public class JwtTokenProvider implements TokenProvider {
     public String getSubjectFromExpiredAccessToken(String accessToken) {
         try {
             // 만료되지 않은 경우 정상적으로 Subject 추출
-            return parseClaims(accessToken).getSubject();
+            return parseClaims(normalizeToken(accessToken)).getSubject();
         } catch (ExpiredJwtException e) {
             // 만료된 경우 예외 객체에 담긴 Claims에서 Subject 추출
             return e.getClaims().getSubject();
@@ -151,15 +151,23 @@ public class JwtTokenProvider implements TokenProvider {
         return Jwts.parser()
                 .verifyWith(secretKey)
                 .build()
-                .parseSignedClaims(token)
+                .parseSignedClaims(normalizeToken(token))
                 .getPayload();
     }
 
     @Override
     public long getRemainingTime(String token) {
-        String pureToken = token.startsWith(ACCESS_TOKEN_PREFIX) ? token.substring(ACCESS_TOKEN_PREFIX.length()) : token;
-        Date expiration = parseClaims(pureToken).getExpiration();
+        Date expiration = parseClaims(normalizeToken(token)).getExpiration();
         long now = new Date().getTime();
         return Math.max(0, expiration.getTime() - now);
     }
+
+	private String normalizeToken(String token) {
+		if (token == null) {
+			return null;
+		}
+		return token.startsWith(ACCESS_TOKEN_PREFIX)
+				? token.substring(ACCESS_TOKEN_PREFIX.length())		// accessToken 반환
+				: token;	// refreshToken 반환
+	}
 }
