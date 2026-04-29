@@ -10,6 +10,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.pgsg.user_service.auth.domain.TokenProvider;
 import org.pgsg.user_service.auth.domain.model.TokenType;
+import org.pgsg.user_service.auth.infrastructure.security.jwt.JwtUtils;
 import org.pgsg.user_service.auth.infrastructure.web.HttpRequestHeaderWrapper;
 import org.springframework.http.HttpHeaders;
 import org.springframework.web.filter.OncePerRequestFilter;
@@ -24,15 +25,6 @@ import java.nio.charset.StandardCharsets;
 @RequiredArgsConstructor
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
-	private static final String BEARER_PREFIX = "Bearer ";
-
-	private static final String HEADER_USER_ID = "X-User-Id";
-	private static final String HEADER_USERNAME = "X-User-Username";
-	private static final String HEADER_ROLES = "X-User-Roles";
-	private static final String HEADER_USER_NAME = "X-User-Name";
-	private static final String HEADER_USER_NICKNAME = "X-User-Nickname";
-	private static final String HEADER_ENABLED = "X-User-Enabled";
-
 	private final TokenProvider jwtTokenProvider;
 
 	@Override
@@ -46,7 +38,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 				Claims claims = jwtTokenProvider.parseClaims(accessToken);
 
 				// 3. 토큰 타입 검증 (액세스 토큰만 허용)
-				String tokenType = claims.get("token_type", String.class);
+				String tokenType = claims.get(JwtUtils.CLAIM_TOKEN_TYPE, String.class);
 				if (!TokenType.ACCESS.matches(tokenType)) {
 					log.warn("[JwtFilter] 유효한 액세스 토큰이 아님 (token_type: {})", tokenType);
 					filterChain.doFilter(new HttpRequestHeaderWrapper(request), response);
@@ -71,29 +63,23 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
 	private String resolveToken(HttpServletRequest request) {
 		String authorizationHeader = request.getHeader(HttpHeaders.AUTHORIZATION);
-
-		// 비로그인 상태에서 요청을 보내거나 보낸 토큰이 accessToken에 해당되지 않는 경우
-		if (authorizationHeader == null || !authorizationHeader.startsWith(BEARER_PREFIX)) {
-			return null;
-		}
-
-		return authorizationHeader.substring(BEARER_PREFIX.length());
+		return JwtUtils.resolveToken(authorizationHeader);
 	}
 
 	private HttpServletRequest createWrapperWithHeaders(HttpServletRequest request, Claims claims) {
 		HttpRequestHeaderWrapper requestWrapper = new HttpRequestHeaderWrapper(request);
 
-		requestWrapper.addHeader(HEADER_USER_ID, claims.getSubject());
-		requestWrapper.addHeader(HEADER_USERNAME, claims.get("username", String.class));
-		requestWrapper.addHeader(HEADER_ROLES, claims.get("role", String.class));
+		requestWrapper.addHeader(JwtUtils.HEADER_USER_ID, claims.getSubject());
+		requestWrapper.addHeader(JwtUtils.HEADER_USERNAME, claims.get(JwtUtils.CLAIM_USERNAME, String.class));
+		requestWrapper.addHeader(JwtUtils.HEADER_ROLES, claims.get(JwtUtils.CLAIM_USER_ROLE, String.class));
 
 		// 한글 헤더는 URL 인코딩 처리 (LoginFilter에서 디코딩함)
-		requestWrapper.addHeader(HEADER_USER_NAME, encodeValue(claims.get("name", String.class)));
-		requestWrapper.addHeader(HEADER_USER_NICKNAME, encodeValue(claims.get("nickname", String.class)));
+		requestWrapper.addHeader(JwtUtils.HEADER_USER_NAME, encodeValue(claims.get(JwtUtils.CLAIM_NAME, String.class)));
+		requestWrapper.addHeader(JwtUtils.HEADER_USER_NICKNAME, encodeValue(claims.get(JwtUtils.CLAIM_NICKNAME, String.class)));
 
 		// Enabled 여부는 boolean값을 string 타입으로 변환한 값을 저장
-		Boolean enabled = claims.get("enabled", Boolean.class);
-		requestWrapper.addHeader(HEADER_ENABLED, enabled != null ? enabled.toString() : "false");
+		Boolean enabled = claims.get(JwtUtils.CLAIM_ENABLED, Boolean.class);
+		requestWrapper.addHeader(JwtUtils.HEADER_ENABLED, enabled != null ? enabled.toString() : "false");
 
 		return requestWrapper;
 	}

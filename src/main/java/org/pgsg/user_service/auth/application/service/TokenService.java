@@ -11,6 +11,7 @@ import org.pgsg.user_service.auth.domain.TokenRepository;
 import org.pgsg.user_service.auth.domain.model.TokenPair;
 import org.pgsg.user_service.auth.domain.model.TokenType;
 import org.pgsg.user_service.auth.infrastructure.security.jwt.JwtProperties;
+import org.pgsg.user_service.auth.infrastructure.security.jwt.JwtUtils;
 import org.pgsg.user_service.user.domain.exception.UserServiceException;
 import org.springframework.stereotype.Service;
 
@@ -65,7 +66,8 @@ public class TokenService {
 	 */
 	public void addToBlacklist(UUID userId, String accessToken) {
 		try {
-			long remainingTime = tokenProvider.getRemainingTime(accessToken);
+			String normalizedToken = JwtUtils.normalizeToken(accessToken);
+			long remainingTime = tokenProvider.getRemainingTime(normalizedToken);
 			if (remainingTime > 0) {
 				tokenRepository.saveBlacklist(userId, accessToken, Duration.ofMillis(remainingTime));
 			}
@@ -84,7 +86,7 @@ public class TokenService {
 		// 2. Refresh Token 유효성 검증 및 교차 검증
 		UUID userIdFromRefresh = Optional.of(refreshToken)
 				.filter(tokenProvider::validateToken)
-				.filter(token -> TokenType.REFRESH.matches(tokenProvider.parseClaims(token).get("token_type", String.class))) // 토큰 타입 검증 추가
+				.filter(token -> TokenType.REFRESH.matches(tokenProvider.parseClaims(token).get(JwtUtils.CLAIM_TOKEN_TYPE, String.class))) // 토큰 타입 검증 추가
 				.map(tokenProvider::getUserId)
 				.filter(userIdFromAccess::equals) // 교차 검증
 				.orElseThrow(() -> new UserServiceException("UnauthorizedException"));
@@ -100,7 +102,8 @@ public class TokenService {
 	 */
 	public boolean isBlacklisted(String accessToken) {
 		// 토큰에서 사용자 ID를 추출하여 해당 키로 저장된 토큰이 있는지 확인
-		UUID userId = UUID.fromString(tokenProvider.getSubjectFromExpiredAccessToken(accessToken));
+		String normalizedToken = JwtUtils.normalizeToken(accessToken);
+		UUID userId = UUID.fromString(tokenProvider.getSubjectFromExpiredAccessToken(normalizedToken));
 		return tokenRepository.existsByBlacklist(userId, accessToken);
 	}
 }

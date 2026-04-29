@@ -25,8 +25,6 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class JwtTokenProvider implements TokenProvider {
 
-	private static final String ACCESS_TOKEN_PREFIX = "Bearer ";
-
     private final JwtProperties jwtProperties;
     private SecretKey secretKey;
 
@@ -61,7 +59,7 @@ public class JwtTokenProvider implements TokenProvider {
      */
     @Override
     public UUID getUserId(String token) {
-        return UUID.fromString(parseClaims(normalizeToken(token)).getSubject());
+        return UUID.fromString(parseClaims(token).getSubject());
     }
 
     /**
@@ -74,7 +72,7 @@ public class JwtTokenProvider implements TokenProvider {
             Jwts.parser()
 				.verifyWith(secretKey)
 				.build()
-				.parseSignedClaims(token);
+				.parseSignedClaims(JwtUtils.normalizeToken(token));
             return true;
         } catch (ExpiredJwtException e) {
 			log.info("만료된 JWT 토큰입니다.");
@@ -96,7 +94,7 @@ public class JwtTokenProvider implements TokenProvider {
     public String getSubjectFromExpiredAccessToken(String accessToken) {
         try {
             // 만료되지 않은 경우 정상적으로 Subject 추출
-            return parseClaims(normalizeToken(accessToken)).getSubject();
+            return parseClaims(accessToken).getSubject();
         } catch (ExpiredJwtException e) {
             // 만료된 경우 예외 객체에 담긴 Claims에서 Subject 추출
             return e.getClaims().getSubject();
@@ -112,19 +110,19 @@ public class JwtTokenProvider implements TokenProvider {
         UserDetailsImpl userDetailsInfo = (UserDetailsImpl) userDetails;
 		String accessToken = Jwts.builder()
 				.subject(userDetailsInfo.getUuid().toString())
-				.claim("token_type", TokenType.ACCESS.getValue())
-				.claim("username", userDetailsInfo.getUsername())
-				.claim("role", userDetailsInfo.getUserRole())
-				.claim("name", userDetailsInfo.getName())
-				.claim("nickname", userDetailsInfo.getNickname())
-				.claim("enabled", userDetailsInfo.isEnabled())
+				.claim(JwtUtils.CLAIM_TOKEN_TYPE, TokenType.ACCESS.getValue())
+				.claim(JwtUtils.CLAIM_USERNAME, userDetailsInfo.getUsername())
+				.claim(JwtUtils.CLAIM_USER_ROLE, userDetailsInfo.getUserRole())
+				.claim(JwtUtils.CLAIM_NAME, userDetailsInfo.getName())
+				.claim(JwtUtils.CLAIM_NICKNAME, userDetailsInfo.getNickname())
+				.claim(JwtUtils.CLAIM_ENABLED, userDetailsInfo.isEnabled())
 				.issuedAt(now)
 				.expiration(new Date(now.getTime() + expiration))
 				.signWith(secretKey, Jwts.SIG.HS256)
 				.compact();
 
 		// 생성한 accessToken에 'Bearer '를 붙여서 반환
-		return ACCESS_TOKEN_PREFIX + accessToken;
+		return JwtUtils.BEARER_PREFIX + accessToken;
     }
 
     /**
@@ -137,8 +135,8 @@ public class JwtTokenProvider implements TokenProvider {
 
 		return Jwts.builder()
 				.subject(userDetailsInfo.getUuid().toString())
-				.claim("token_type", TokenType.REFRESH.getValue())
-				.claim("role", userDetailsInfo.getUserRole())
+				.claim(JwtUtils.CLAIM_TOKEN_TYPE, TokenType.REFRESH.getValue())
+				.claim(JwtUtils.CLAIM_USER_ROLE, userDetailsInfo.getUserRole())
 				.issuedAt(now)
 				.expiration(new Date(now.getTime() + expiration))
 				.signWith(secretKey, Jwts.SIG.HS256)
@@ -154,23 +152,14 @@ public class JwtTokenProvider implements TokenProvider {
         return Jwts.parser()
                 .verifyWith(secretKey)
                 .build()
-                .parseSignedClaims(normalizeToken(token))
+                .parseSignedClaims(JwtUtils.normalizeToken(token))
                 .getPayload();
     }
 
     @Override
     public long getRemainingTime(String token) {
-        Date expiration = parseClaims(normalizeToken(token)).getExpiration();
+        Date expiration = parseClaims(token).getExpiration();
         long now = new Date().getTime();
         return Math.max(0, expiration.getTime() - now);
     }
-
-	private String normalizeToken(String token) {
-		if (token == null) {
-			return null;
-		}
-		return token.startsWith(ACCESS_TOKEN_PREFIX)
-				? token.substring(ACCESS_TOKEN_PREFIX.length())		// accessToken 반환
-				: token;	// refreshToken 반환
-	}
 }
