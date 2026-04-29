@@ -39,7 +39,8 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 		String accessToken = resolveToken(request);
 		if (accessToken == null || !jwtTokenProvider.validateToken(accessToken)) {
 			log.info("[JwtFilter] 유효한 토큰이 없음 - 다음 필터로 위임");
-			filterChain.doFilter(request, response);
+			// Authorization 헤더 없이 X-User-* 헤더만 보낸 경우 현재 요청 헤더에 포함된 X-User-* 헤더를 모두 비움
+			filterChain.doFilter(new HttpRequestHeaderWrapper(request), response);
 			return;
 		}
 
