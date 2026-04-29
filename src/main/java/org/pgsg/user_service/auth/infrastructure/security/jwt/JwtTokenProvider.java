@@ -9,6 +9,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.pgsg.config.security.UserDetailsImpl;
 import org.pgsg.user_service.auth.domain.TokenProvider;
 import org.pgsg.user_service.auth.domain.model.TokenPair;
+import org.pgsg.user_service.auth.domain.model.TokenType;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 
@@ -71,9 +72,9 @@ public class JwtTokenProvider implements TokenProvider {
     public boolean validateToken(String token) {
         try {
             Jwts.parser()
-                    .verifyWith(secretKey)
-                    .build()
-                    .parseSignedClaims(token);
+				.verifyWith(secretKey)
+				.build()
+				.parseSignedClaims(token);
             return true;
         } catch (ExpiredJwtException e) {
 			log.info("만료된 JWT 토큰입니다.");
@@ -111,6 +112,7 @@ public class JwtTokenProvider implements TokenProvider {
         UserDetailsImpl userDetailsInfo = (UserDetailsImpl) userDetails;
 		String accessToken = Jwts.builder()
 				.subject(userDetailsInfo.getUuid().toString())
+				.claim("token_type", TokenType.ACCESS.getValue())
 				.claim("username", userDetailsInfo.getUsername())
 				.claim("role", userDetailsInfo.getUserRole())
 				.claim("name", userDetailsInfo.getName())
@@ -135,6 +137,7 @@ public class JwtTokenProvider implements TokenProvider {
 
 		return Jwts.builder()
 				.subject(userDetailsInfo.getUuid().toString())
+				.claim("token_type", TokenType.REFRESH.getValue())
 				.claim("role", userDetailsInfo.getUserRole())
 				.issuedAt(now)
 				.expiration(new Date(now.getTime() + expiration))

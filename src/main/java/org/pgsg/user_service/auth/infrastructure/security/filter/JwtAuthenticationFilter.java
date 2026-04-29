@@ -9,6 +9,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.pgsg.user_service.auth.domain.TokenProvider;
+import org.pgsg.user_service.auth.domain.model.TokenType;
 import org.pgsg.user_service.auth.infrastructure.web.HttpRequestHeaderWrapper;
 import org.springframework.http.HttpHeaders;
 import org.springframework.web.filter.OncePerRequestFilter;
@@ -43,9 +44,18 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 			try {
 				// 2. 사용자 정보 추출: 토큰에서 사용자 정보 추출
 				Claims claims = jwtTokenProvider.parseClaims(accessToken);
-				// 3. 토큰에서 추출한 정보를 요청 헤더에 저장
+
+				// 3. 토큰 타입 검증 (액세스 토큰만 허용)
+				String tokenType = claims.get("token_type", String.class);
+				if (!TokenType.ACCESS.matches(tokenType)) {
+					log.warn("[JwtFilter] 유효한 액세스 토큰이 아님 (token_type: {})", tokenType);
+					filterChain.doFilter(new HttpRequestHeaderWrapper(request), response);
+					return;
+				}
+
+				// 4. 토큰에서 추출한 정보를 요청 헤더에 저장
 				HttpServletRequest requestWrapper = createWrapperWithHeaders(request, claims);
-				// 4. 다음 필터로 위임
+				// 5. 다음 필터로 위임
 				log.info("[JwtFilter] 토큰 claims 파싱 완료 - 다음 필터로 위임");
 				filterChain.doFilter(requestWrapper, response);
 				return;

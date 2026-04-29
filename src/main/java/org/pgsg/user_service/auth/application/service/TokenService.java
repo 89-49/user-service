@@ -1,11 +1,15 @@
 package org.pgsg.user_service.auth.application.service;
 
+import io.jsonwebtoken.Jwe;
+import io.jsonwebtoken.JwtException;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.pgsg.config.security.UserDetailsImpl;
 import org.pgsg.user_service.auth.application.dto.info.AuthInfo;
 import org.pgsg.user_service.auth.domain.TokenProvider;
 import org.pgsg.user_service.auth.domain.TokenRepository;
 import org.pgsg.user_service.auth.domain.model.TokenPair;
+import org.pgsg.user_service.auth.domain.model.TokenType;
 import org.pgsg.user_service.auth.infrastructure.security.jwt.JwtProperties;
 import org.pgsg.user_service.user.domain.exception.UserServiceException;
 import org.springframework.stereotype.Service;
@@ -14,6 +18,7 @@ import java.time.Duration;
 import java.util.Optional;
 import java.util.UUID;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class TokenService {
@@ -42,7 +47,7 @@ public class TokenService {
 	 * 저장소(Redis)에 저장된 리프레시 토큰과 전달받은 토큰이 일치하는지 검증합니다.
 	 */
 	public void validateRefreshToken(UUID userId, String refreshToken) {
-		tokenRepository.findRefreshTokenHash(userId)
+		tokenRepository.findRefreshToken(userId)
 				.filter(refreshToken::equals)
 				.orElseThrow(() -> new UserServiceException("UnauthorizedException"));
 	}
@@ -59,9 +64,13 @@ public class TokenService {
 	 * 토큰의 남은 유효 시간만큼만 저장소에 유지합니다.
 	 */
 	public void addToBlacklist(UUID userId, String accessToken) {
-		long remainingTime = tokenProvider.getRemainingTime(accessToken);
-		if (remainingTime > 0) {
-			tokenRepository.saveBlacklist(userId, accessToken, Duration.ofMillis(remainingTime));
+		try {
+			long remainingTime = tokenProvider.getRemainingTime(accessToken);
+			if (remainingTime > 0) {
+				tokenRepository.saveBlacklist(userId, accessToken, Duration.ofMillis(remainingTime));
+			}
+		} catch (JwtException | IllegalArgumentException e) {
+			log.error("[TokenService] 블랙리스트 등록 중 오류 발생 (토큰 파싱 실패 등): {}", e.getMessage());
 		}
 	}
 
@@ -75,6 +84,7 @@ public class TokenService {
 		// 2. Refresh Token 유효성 검증 및 교차 검증
 		UUID userIdFromRefresh = Optional.of(refreshToken)
 				.filter(tokenProvider::validateToken)
+				.filter(token -> TokenType.REFRESH.matches(tokenProvider.parseClaims(token).get("token_type", String.class))) // 토큰 타입 검증 추가
 				.map(tokenProvider::getUserId)
 				.filter(userIdFromAccess::equals) // 교차 검증
 				.orElseThrow(() -> new UserServiceException("UnauthorizedException"));
