@@ -19,7 +19,6 @@ import java.util.Date;
 import java.util.UUID;
 
 // TODO: 공통모듈의 config/security/jwt 패키지로 이전하되, 수동 빈 등록은 gateway-server, user-service 내부에서 수행
-// TODO: 공통모듈로 이전하기 전, 토큰 재발급 로직 구현 필요
 @Slf4j
 @Component
 @RequiredArgsConstructor

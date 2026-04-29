@@ -14,6 +14,7 @@ import java.time.Duration;
 import java.util.Optional;
 import java.util.UUID;
 
+// TODO: 토큰 비즈니스 로직을 통합적으로 관리 -> user-service에 유지
 @Service
 @RequiredArgsConstructor
 public class TokenService {
