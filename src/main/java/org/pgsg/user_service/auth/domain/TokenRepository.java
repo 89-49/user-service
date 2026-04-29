@@ -11,13 +11,13 @@ public interface TokenRepository {
     void saveRefreshToken(UUID userId, String refreshTokenHash, Duration duration);
 
     // 저장된 토큰 조회
-    Optional<String> findRefreshTokenHash(UUID userId);
+    Optional<String> findRefreshToken(UUID userId);
 
     // 로그아웃 또는 토큰 갱신 시 삭제
     void deleteRefreshToken(UUID userId);
 
     // 특정 토큰 존재 여부 확인
-    boolean existsByRefreshTokenHash(String refreshTokenHash);
+    boolean existsByRefreshToken(UUID userId, String refreshToken);
 
     // 블랙리스트 토큰 추가
     void saveBlacklist(UUID userId, String accessToken, Duration duration);

@@ -19,12 +19,12 @@ public class RedisTokenRepository implements TokenRepository {
     private static final String BL_PREFIX = "BL:";
 
     @Override
-    public void saveRefreshToken(UUID userId, String refreshTokenHash, Duration duration) {
-        redisTemplate.opsForValue().set(RT_PREFIX + userId, refreshTokenHash, duration);
+    public void saveRefreshToken(UUID userId, String refreshToken, Duration duration) {
+        redisTemplate.opsForValue().set(RT_PREFIX + userId, refreshToken, duration);
     }
 
     @Override
-    public Optional<String> findRefreshTokenHash(UUID userId) {
+    public Optional<String> findRefreshToken(UUID userId) {
         return Optional.ofNullable(redisTemplate.opsForValue().get(RT_PREFIX + userId));
     }
 
@@ -34,10 +34,11 @@ public class RedisTokenRepository implements TokenRepository {
     }
 
     @Override
-    public boolean existsByRefreshTokenHash(String refreshTokenHash) {
+    public boolean existsByRefreshToken(UUID userId, String refreshToken) {
         // Redis에서 값(value)만으로 키를 찾는 것은 성능상 좋지 않으므로
         // 우선 false를 반환하거나 필요 시 로직을 추가 예정.
-        return false;
+        String foundRefreshToken = redisTemplate.opsForValue().get(RT_PREFIX + userId);
+        return refreshToken.equals(foundRefreshToken);
     }
 
     @Override
