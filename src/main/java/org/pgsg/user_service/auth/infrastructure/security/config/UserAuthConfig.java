@@ -2,8 +2,8 @@ package org.pgsg.user_service.auth.infrastructure.security.config;
 
 import lombok.RequiredArgsConstructor;
 import org.pgsg.config.security.*;
-import org.pgsg.user_service.auth.domain.JwtTokenProvider;
-import org.pgsg.user_service.auth.infrastructure.security.JwtAuthenticationFilter;
+import org.pgsg.user_service.auth.domain.TokenProvider;
+import org.pgsg.user_service.auth.infrastructure.security.filter.JwtAuthenticationFilter;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
@@ -25,7 +25,7 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 public class UserAuthConfig implements SecurityConfig {
 
     private final SecurityConfigImpl commonSecurityConfig;
-    private final JwtTokenProvider jwtTokenProvider;
+    private final TokenProvider jwtTokenProvider;
 
     @Bean
     @Primary

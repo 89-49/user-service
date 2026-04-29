@@ -6,11 +6,11 @@ import org.pgsg.user_service.auth.application.dto.command.LoginUserCommand;
 import org.pgsg.user_service.auth.application.dto.command.SignupUserCommand;
 import org.pgsg.user_service.auth.application.dto.info.AuthInfo;
 import org.pgsg.user_service.auth.application.dto.info.SignupInfo;
-import org.pgsg.user_service.auth.domain.JwtTokenProvider;
+import org.pgsg.user_service.auth.domain.TokenProvider;
 import org.pgsg.user_service.auth.domain.TokenRepository;
 import org.pgsg.user_service.auth.domain.UserAuthenticator;
 import org.pgsg.user_service.auth.domain.model.TokenPair;
-import org.pgsg.user_service.auth.infrastructure.security.JwtProperties;
+import org.pgsg.user_service.auth.infrastructure.security.jwt.JwtProperties;
 import org.pgsg.user_service.user.application.UserService;
 import org.pgsg.user_service.user.application.dto.command.CreateUserCommand;
 import org.pgsg.user_service.user.application.dto.info.UserDetailInfo;
@@ -27,7 +27,7 @@ public class AuthService {
 
     private final JwtProperties jwtProperties;
     private final UserService userService;  // 분리할 경우 내부적으로 FeignClient를 사용하는 UserProvider로 대체 필요
-    private final JwtTokenProvider jwtTokenProvider;
+    private final TokenProvider jwtTokenProvider;
     private final TokenRepository tokenRepository;
     private final UserAuthenticator userAuthenticator;
     private final PasswordEncoder passwordEncoder;
