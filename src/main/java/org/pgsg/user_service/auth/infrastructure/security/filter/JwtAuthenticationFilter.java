@@ -36,32 +36,27 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
 	@Override
 	protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
-		try {
-			// 1. 요청에 포함된 Authorization 헤더 검증
-			String accessToken = resolveToken(request);
-			if (accessToken == null || !jwtTokenProvider.validateToken(accessToken)) {
-				log.info("[JwtFilter] 유효한 토큰이 없음 - 다음 필터로 위임");
-				// Authorization 헤더 없이 X-User-* 헤더만 보낸 경우 현재 요청 헤더에 포함된 X-User-* 헤더를 모두 비움
-				filterChain.doFilter(new HttpRequestHeaderWrapper(request), response);
+		// 1. 요청에 포함된 Authorization 헤더 검증
+		String accessToken = resolveToken(request);
+
+		if (accessToken != null && jwtTokenProvider.validateToken(accessToken)) {
+			try {
+				// 2. 사용자 정보 추출: 토큰에서 사용자 정보 추출
+				Claims claims = jwtTokenProvider.parseClaims(accessToken);
+				// 3. 토큰에서 추출한 정보를 요청 헤더에 저장
+				HttpServletRequest requestWrapper = createWrapperWithHeaders(request, claims);
+				// 4. 다음 필터로 위임
+				log.info("[JwtFilter] 토큰 claims 파싱 완료 - 다음 필터로 위임");
+				filterChain.doFilter(requestWrapper, response);
 				return;
+			} catch (JwtException | IllegalArgumentException e) {
+				log.warn("[JwtFilter] 토큰 claims 추출 중 예상치 못한 오류 발생 - {}", e.getMessage());
 			}
-
-			// 2. 사용자 정보 추출: 토큰에서 사용자 정보 추출
-			Claims claims = jwtTokenProvider.parseClaims(accessToken);
-
-			// 3. 토큰에서 추출한 정보를 요청 헤더에 저장
-			HttpServletRequest requestWrapper = createWrapperWithHeaders(request, claims);
-
-			// 4. 다음 필터로 위임
-			log.info("[JwtFilter] 토큰 claims 파싱 완료 - 다음 필터로 위임");
-			filterChain.doFilter(requestWrapper, response);
-		} catch (JwtException | IllegalArgumentException e) {
-			log.info("[JwtFilter] 토큰 claims 파싱 실패 - 다음 필터로 위임");
-			filterChain.doFilter(new HttpRequestHeaderWrapper(request), response);
-		} catch (ServletException | IOException e) {
-			log.warn("[JwtFilter] 토큰 claims 파싱 실패 - 인증 정보 헤더 제거 후 다음 필터로 위임");
-			filterChain.doFilter(new HttpRequestHeaderWrapper(request), response);
 		}
+
+		log.info("[JwtFilter] 유효한 토큰이 없음 - 다음 필터로 위임");
+		// Authorization 헤더 없이 X-User-* 헤더만 보낸 경우 현재 요청 헤더에 포함된 X-User-* 헤더를 모두 비움
+		filterChain.doFilter(new HttpRequestHeaderWrapper(request), response);
 	}
 
 	private String resolveToken(HttpServletRequest request) {
