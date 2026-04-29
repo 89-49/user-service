@@ -16,6 +16,7 @@ public class RedisTokenRepository implements TokenRepository {
 
     private final RedisTemplate<String, String> redisTemplate;
     private static final String RT_PREFIX = "RT:";
+    private static final String BL_PREFIX = "BL:";
 
     @Override
     public void saveRefreshToken(UUID userId, String refreshTokenHash, Duration duration) {
@@ -37,5 +38,15 @@ public class RedisTokenRepository implements TokenRepository {
         // Redis에서 값(value)만으로 키를 찾는 것은 성능상 좋지 않으므로
         // 우선 false를 반환하거나 필요 시 로직을 추가 예정.
         return false;
+    }
+
+    @Override
+    public void saveBlacklist(String accessToken, Duration duration) {
+        redisTemplate.opsForValue().set(BL_PREFIX + accessToken, "logout", duration);
+    }
+
+    @Override
+    public boolean existsByBlacklist(String accessToken) {
+        return Boolean.TRUE.equals(redisTemplate.hasKey(BL_PREFIX + accessToken));
     }
 }

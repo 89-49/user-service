@@ -147,11 +147,20 @@ public class JwtTokenProvider implements TokenProvider {
      * 토큰을 복호화(파싱)하여 내부의 데이터 묶음인 Claims를 추출합니다.
      * 서명 검증을 포함하며, 라이브러리 버전에 따라 parseSignedClaims와 getPayload를 사용합니다.
      */
+	@Override
     public Claims parseClaims(String token) {
         return Jwts.parser()
                 .verifyWith(secretKey)
                 .build()
                 .parseSignedClaims(token)
                 .getPayload();
+    }
+
+    @Override
+    public long getRemainingTime(String token) {
+        String pureToken = token.startsWith(ACCESS_TOKEN_PREFIX) ? token.substring(ACCESS_TOKEN_PREFIX.length()) : token;
+        Date expiration = parseClaims(pureToken).getExpiration();
+        long now = new Date().getTime();
+        return Math.max(0, expiration.getTime() - now);
     }
 }

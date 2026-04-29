@@ -18,4 +18,10 @@ public interface TokenRepository {
 
     // 특정 토큰 존재 여부 확인
     boolean existsByRefreshTokenHash(String refreshTokenHash);
+
+    // 블랙리스트 토큰 추가
+    void saveBlacklist(String accessToken, Duration duration);
+
+    // 블랙리스트 여부 확인
+    boolean existsByBlacklist(String accessToken);
 }

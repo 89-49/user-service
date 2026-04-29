@@ -22,4 +22,7 @@ public interface TokenProvider {
     String getSubjectFromExpiredAccessToken(String accessToken);
 
     Claims parseClaims(String token);
+
+    // 토큰의 남은 유효 시간(밀리초) 계산
+    long getRemainingTime(String token);
 }
