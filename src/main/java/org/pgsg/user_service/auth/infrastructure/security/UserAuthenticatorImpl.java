@@ -5,6 +5,7 @@ import org.pgsg.config.security.UserDetailsImpl;
 import org.pgsg.user_service.auth.application.service.TokenService;
 import org.pgsg.user_service.auth.domain.UserAuthenticator;
 import org.pgsg.user_service.user.application.UserService;
+import org.pgsg.user_service.user.domain.exception.UserErrorCode;
 import org.pgsg.user_service.user.domain.exception.UserServiceException;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -50,7 +51,7 @@ public class UserAuthenticatorImpl implements UserAuthenticator {
     @Override
     public void checkBlacklist(String accessToken) {
         if (tokenService.isBlacklisted(accessToken)) {
-            throw new UserServiceException("UnauthorizedException");
+            throw new UserServiceException(UserErrorCode.UNAUTHORIZED);
         }
     }
 

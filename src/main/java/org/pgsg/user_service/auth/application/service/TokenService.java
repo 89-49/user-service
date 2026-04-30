@@ -12,6 +12,7 @@ import org.pgsg.user_service.auth.domain.model.TokenPair;
 import org.pgsg.user_service.auth.domain.model.TokenType;
 import org.pgsg.user_service.auth.infrastructure.security.jwt.JwtProperties;
 import org.pgsg.user_service.auth.infrastructure.security.jwt.JwtUtils;
+import org.pgsg.user_service.user.domain.exception.UserErrorCode;
 import org.pgsg.user_service.user.domain.exception.UserServiceException;
 import org.springframework.stereotype.Service;
 
@@ -50,7 +51,7 @@ public class TokenService {
 	public void validateRefreshToken(UUID userId, String refreshToken) {
 		tokenRepository.findRefreshToken(userId)
 				.filter(refreshToken::equals)
-				.orElseThrow(() -> new UserServiceException("UnauthorizedException"));
+				.orElseThrow(() -> new UserServiceException(UserErrorCode.UNAUTHORIZED));
 	}
 
 	/**
@@ -89,7 +90,7 @@ public class TokenService {
 				.filter(token -> TokenType.REFRESH.matches(tokenProvider.parseClaims(token).get(JwtUtils.CLAIM_TOKEN_TYPE, String.class))) // 토큰 타입 검증 추가
 				.map(tokenProvider::getUserId)
 				.filter(userIdFromAccess::equals) // 교차 검증
-				.orElseThrow(() -> new UserServiceException("UnauthorizedException"));
+				.orElseThrow(() -> new UserServiceException(UserErrorCode.UNAUTHORIZED));
 
 		// 3. 저장소(Redis) 일치 여부 확인
 		validateRefreshToken(userIdFromRefresh, refreshToken);

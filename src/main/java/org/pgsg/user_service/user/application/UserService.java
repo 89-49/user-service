@@ -5,6 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.pgsg.user_service.user.application.dto.command.CreateUserCommand;
 import org.pgsg.user_service.user.application.dto.info.LoginUserDetailInfo;
 import org.pgsg.user_service.user.application.dto.info.UserDetailInfo;
+import org.pgsg.user_service.user.domain.exception.UserErrorCode;
 import org.pgsg.user_service.user.domain.exception.UserServiceException;
 import org.pgsg.user_service.user.domain.model.User;
 import org.pgsg.user_service.user.domain.model.UserRole;
@@ -29,10 +30,10 @@ public class UserService {
 	@Transactional
 	public UserDetailInfo createUser(CreateUserCommand createdUserCommand) {
 		if (userRepository.existsByUsername(createdUserCommand.username())) {
-			throw new UserServiceException("DuplicateUsernameException");
+			throw new UserServiceException(UserErrorCode.DUPLICATE_USERNAME);
 		}
 		if (UserRole.isAdmin(createdUserCommand.userRole()) && !roleCheck.hasRole(UserRole.MASTER)) {
-			throw new UserServiceException("UnauthorizedRoleAssignmentException");
+			throw new UserServiceException(UserErrorCode.UNAUTHORIZED_ROLE_ASSIGNMENT);
 		}
 
 		try {
@@ -42,7 +43,7 @@ public class UserService {
 		} catch (DataIntegrityViolationException e) {
 			String message = e.getMostSpecificCause().getMessage();
 			if (message != null && message.contains("uk_user_username")) {
-				throw new UserServiceException("DuplicateUsernameException", e);
+				throw new UserServiceException(UserErrorCode.DUPLICATE_USERNAME, e);
 			}
 			throw e;
 		}
@@ -52,7 +53,7 @@ public class UserService {
 	public UserDetailInfo getUserForAdmin(UUID userId) {
 
 		if (!roleCheck.hasRole(List.of(UserRole.MANAGER, UserRole.MASTER))) {
-			throw new UserServiceException("AdminAccessDeniedException");
+			throw new UserServiceException(UserErrorCode.ADMIN_ACCESS_DENIED);
 		}
 
 		return getUser(userId);
@@ -61,7 +62,7 @@ public class UserService {
 	@Transactional(readOnly = true)
 	public UserDetailInfo getUser(UUID userId) {
 		User user = userRepository.findById(userId)
-				.orElseThrow(() -> new UserServiceException("UserNotFoundException"));
+				.orElseThrow(() -> new UserServiceException(UserErrorCode.USER_NOT_FOUND));
 
 		return UserDetailInfo.from(user);
 	}
@@ -69,7 +70,7 @@ public class UserService {
 	@Transactional(readOnly = true)
 	public LoginUserDetailInfo getUserForAuth(UUID userId) {
 		User user = userRepository.findById(userId)
-				.orElseThrow(() -> new UserServiceException("UserNotFoundException"));
+				.orElseThrow(() -> new UserServiceException(UserErrorCode.USER_NOT_FOUND));
 
 		return LoginUserDetailInfo.from(user);
 	}
@@ -77,7 +78,7 @@ public class UserService {
 	@Transactional(readOnly = true)
 	public LoginUserDetailInfo getUserForAuth(String username) {
 		User user = userRepository.findByUsername(username)
-				.orElseThrow(() -> new UserServiceException("UserNotFoundException"));
+				.orElseThrow(() -> new UserServiceException(UserErrorCode.USER_NOT_FOUND));
 
 		return LoginUserDetailInfo.from(user);
 	}
