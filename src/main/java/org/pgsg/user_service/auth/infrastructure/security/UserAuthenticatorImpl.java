@@ -16,7 +16,6 @@ import java.util.UUID;
 
 // TODO: 로그아웃 여부 등 실시간 상태 확인은 반드시 여기서 checkBlacklist를 통해 수행 - user-service에 유지
 
-@Component
 @RequiredArgsConstructor
 public class UserAuthenticatorImpl implements UserAuthenticator {
 

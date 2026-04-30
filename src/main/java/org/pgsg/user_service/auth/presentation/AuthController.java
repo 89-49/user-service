@@ -1,4 +1,5 @@
 package org.pgsg.user_service.auth.presentation;
+
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -31,10 +32,12 @@ public class AuthController {
     }
 
     @PostMapping("/logout")
-    public void logout(@AuthenticationPrincipal UserDetailsImpl userDetails, HttpServletRequest request) {
+    public Void logout(@AuthenticationPrincipal UserDetailsImpl userDetails, HttpServletRequest request) {
         String accessToken = request.getHeader(HttpHeaders.AUTHORIZATION);
         // 인증 객체에서 UUID를 꺼내 서비스에 로그아웃 요청
         authService.logout(userDetails.getUuid(), accessToken);
+
+        return null;
     }
 
     @PostMapping("/signup")

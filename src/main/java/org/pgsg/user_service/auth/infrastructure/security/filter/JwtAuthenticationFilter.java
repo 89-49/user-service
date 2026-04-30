@@ -6,12 +6,14 @@ import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.pgsg.user_service.auth.domain.TokenProvider;
+import org.pgsg.user_service.auth.domain.UserAuthenticator;
 import org.pgsg.user_service.auth.domain.model.TokenType;
 import org.pgsg.user_service.auth.infrastructure.security.jwt.JwtUtils;
 import org.pgsg.user_service.auth.infrastructure.web.HttpRequestHeaderWrapper;
+import org.pgsg.user_service.user.domain.exception.UserServiceException;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.http.HttpHeaders;
 import org.springframework.web.filter.OncePerRequestFilter;
 
@@ -22,10 +24,15 @@ import java.nio.charset.StandardCharsets;
 // TODO: 내부 로직은 gateway-server의 filter 패키지에서 활용(spring cloud gateway 사용 시, webflux로 전환 필요)
 // TODO: gateway-server JWT 인증 필터 분리 완료 이후 deprecated 처리
 @Slf4j
-@RequiredArgsConstructor
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
 	private final TokenProvider jwtTokenProvider;
+	private final UserAuthenticator userAuthenticator;
+
+	public JwtAuthenticationFilter(TokenProvider jwtTokenProvider, @Lazy UserAuthenticator userAuthenticator) {
+		this.jwtTokenProvider = jwtTokenProvider;
+		this.userAuthenticator = userAuthenticator;
+	}
 
 	@Override
 	protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
@@ -34,25 +41,31 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
 		if (accessToken != null && jwtTokenProvider.validateToken(accessToken)) {
 			try {
-				// 2. 사용자 정보 추출: 토큰에서 사용자 정보 추출
+				// 2. 블랙리스트 확인 (UserAuthenticator를 통해 수행)
+				userAuthenticator.checkBlacklist(accessToken);
+
+				// 3. 사용자 정보 추출: 토큰에서 사용자 정보 추출
 				Claims claims = jwtTokenProvider.parseClaims(accessToken);
 
-				// 3. 토큰 타입 검증 (액세스 토큰만 허용)
+				// 4. 토큰 타입 검증 (액세스 토큰만 허용)
 				String tokenType = claims.get(JwtUtils.CLAIM_TOKEN_TYPE, String.class);
 				if (!TokenType.ACCESS.matches(tokenType)) {
 					log.warn("[JwtFilter] 유효한 액세스 토큰이 아님 (token_type: {})", tokenType);
-					filterChain.doFilter(new HttpRequestHeaderWrapper(request), response);
-					return;
+					// 유효하지 않은 타입이면 즉시 예외를 발생시켜 catch 블록으로 보냄 (또는 바로 fall-through)
+					throw new JwtException("Invalid token type");
 				}
 
-				// 4. 토큰에서 추출한 정보를 요청 헤더에 저장
+				// 5. 토큰에서 추출한 정보를 요청 헤더에 저장
 				HttpServletRequest requestWrapper = createWrapperWithHeaders(request, claims);
-				// 5. 다음 필터로 위임
+				// 6. 다음 필터로 위임
 				log.info("[JwtFilter] 토큰 claims 파싱 완료 - 다음 필터로 위임");
 				filterChain.doFilter(requestWrapper, response);
 				return;
+				
+			} catch (UserServiceException e) {
+				log.warn("[JwtFilter] 블랙리스트에 등록된 토큰 - {}", accessToken);
 			} catch (JwtException | IllegalArgumentException e) {
-				log.warn("[JwtFilter] 토큰 claims 추출 중 예상치 못한 오류 발생 - {}", e.getMessage());
+				log.warn("[JwtFilter] 토큰 검증/추출 중 오류 발생 - {}", e.getMessage());
 			}
 		}
 

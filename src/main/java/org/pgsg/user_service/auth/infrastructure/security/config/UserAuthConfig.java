@@ -2,12 +2,18 @@ package org.pgsg.user_service.auth.infrastructure.security.config;
 
 import lombok.RequiredArgsConstructor;
 import org.pgsg.config.security.*;
+import org.pgsg.user_service.auth.application.service.TokenService;
 import org.pgsg.user_service.auth.domain.TokenProvider;
+import org.pgsg.user_service.auth.domain.UserAuthenticator;
 import org.pgsg.user_service.auth.infrastructure.security.filter.JwtAuthenticationFilter;
+import org.pgsg.user_service.auth.infrastructure.security.UserAuthenticatorImpl;
+import org.pgsg.user_service.user.application.UserService;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 import org.springframework.context.annotation.Primary;
+import org.springframework.context.annotation.Lazy;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -26,22 +32,28 @@ public class UserAuthConfig implements SecurityConfig {
 
     private final SecurityConfigImpl commonSecurityConfig;
     private final TokenProvider jwtTokenProvider;
+    private final TokenService tokenService;
+    private final UserService userService;
+
+    @Autowired
+    @Lazy
+    private UserAuthenticator userAuthenticator;
+
+    @Bean
+    public UserAuthenticator userAuthenticator(AuthenticationManager authenticationManager) {
+        return new UserAuthenticatorImpl(authenticationManager, tokenService, userService);
+    }
 
     @Bean
     @Primary
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
 
         http.authorizeHttpRequests(auth -> auth
-                .requestMatchers("/api/v1/auth/login", "/api/v1/auth/signup", "/api/v1/auth/reissue").permitAll() // 로그인, 회원가입 허용
-                .requestMatchers("/internal/v1/users/**").permitAll()   // 추후 로그인용 회원정보 조회가 필요할 경우를 고려
+                .requestMatchers("/api/v1/auth/login", "/api/v1/auth/signup", "/api/v1/auth/reissue").permitAll()
+                .requestMatchers("/internal/v1/users/**").permitAll()
             )
             .addFilterBefore(
-                // JwtAuthenticationFilter에 관한 addFilterBefore를 LoginFilter에 관한 것보다 먼저 호출
-                // 결과적으로는 JwtAuthenticationFilter(JWT 서명/유효시간 검증 및 요청헤더로 파싱)
-                // -> LoginFilter(요청헤더 정보를 SecurityContext에 저장 + 토큰 재발급 시마다 비밀번호를 제외한 로그인한 회원의 정보를 갱신)
-                // -> UsernamePasswordAuthenticationFilter(최초 로그인 시 아이디, 비밀번호 검증 수행)
-                //     - 이미 로그인했다면 최초 로그인 시 SecurityContext에 저장된 아이디, 비밀번호를 사용해서 통과
-                new JwtAuthenticationFilter(jwtTokenProvider), UsernamePasswordAuthenticationFilter.class
+                new JwtAuthenticationFilter(jwtTokenProvider, userAuthenticator), UsernamePasswordAuthenticationFilter.class
             );
 
         return commonSecurityConfig.filterChain(http);
@@ -54,6 +66,6 @@ public class UserAuthConfig implements SecurityConfig {
 
     @Bean
     public PasswordEncoder passwordEncoder() {
-        return new BCryptPasswordEncoder(); // 가장 권장되는 해시 알고리즘
+        return new BCryptPasswordEncoder();
     }
 }
