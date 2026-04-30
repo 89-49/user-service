@@ -1,13 +1,15 @@
-package org.pgsg.user_service.auth.infrastructure;
+package org.pgsg.user_service.auth.infrastructure.security.jwt;
 
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.Keys;
+import io.jsonwebtoken.security.SignatureException;
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.pgsg.config.security.UserDetailsImpl;
-import org.pgsg.user_service.auth.domain.JwtTokenProvider;
+import org.pgsg.user_service.auth.domain.TokenProvider;
 import org.pgsg.user_service.auth.domain.model.TokenPair;
+import org.pgsg.user_service.auth.domain.model.TokenType;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 
@@ -17,12 +19,11 @@ import java.util.Base64;
 import java.util.Date;
 import java.util.UUID;
 
+// TODO: 공통모듈의 config/security/jwt 패키지로 이전하되, 수동 빈 등록은 gateway-server, user-service 내부에서 수행
 @Slf4j
 @Component
 @RequiredArgsConstructor
-public class JwtTokenProviderImpl implements JwtTokenProvider {
-
-	private static final String ACCESS_TOKEN_PREFIX = "Bearer ";
+public class JwtTokenProvider implements TokenProvider {
 
     private final JwtProperties jwtProperties;
     private SecretKey secretKey;
@@ -69,13 +70,20 @@ public class JwtTokenProviderImpl implements JwtTokenProvider {
     public boolean validateToken(String token) {
         try {
             Jwts.parser()
-                    .verifyWith(secretKey)
-                    .build()
-                    .parseSignedClaims(token);
+				.verifyWith(secretKey)
+				.build()
+				.parseSignedClaims(JwtUtils.normalizeToken(token));
             return true;
-        } catch (JwtException | IllegalArgumentException e) {
+        } catch (ExpiredJwtException e) {
+			log.info("만료된 JWT 토큰입니다.");
             return false;
-        }
+        } catch (SignatureException | MalformedJwtException e) {
+			log.warn("잘못된 JWT 서명입니다.");
+			return false;
+		} catch (UnsupportedJwtException | IllegalArgumentException e) {
+			log.warn("지원되지 않는 JWT 토큰이거나 잘못된 JWT 토큰입니다.");
+			return false;
+		}
     }
 
     /**
@@ -102,18 +110,19 @@ public class JwtTokenProviderImpl implements JwtTokenProvider {
         UserDetailsImpl userDetailsInfo = (UserDetailsImpl) userDetails;
 		String accessToken = Jwts.builder()
 				.subject(userDetailsInfo.getUuid().toString())
-				.claim("username", userDetailsInfo.getUsername())
-				.claim("role", userDetailsInfo.getUserRole())
-				.claim("name", userDetailsInfo.getName())
-				.claim("nickname", userDetailsInfo.getNickname())
-				.claim("enabled", userDetailsInfo.isEnabled())
+				.claim(JwtUtils.CLAIM_TOKEN_TYPE, TokenType.ACCESS.getValue())
+				.claim(JwtUtils.CLAIM_USERNAME, userDetailsInfo.getUsername())
+				.claim(JwtUtils.CLAIM_USER_ROLE, userDetailsInfo.getUserRole())
+				.claim(JwtUtils.CLAIM_NAME, userDetailsInfo.getName())
+				.claim(JwtUtils.CLAIM_NICKNAME, userDetailsInfo.getNickname())
+				.claim(JwtUtils.CLAIM_ENABLED, userDetailsInfo.isEnabled())
 				.issuedAt(now)
 				.expiration(new Date(now.getTime() + expiration))
 				.signWith(secretKey, Jwts.SIG.HS256)
 				.compact();
 
 		// 생성한 accessToken에 'Bearer '를 붙여서 반환
-		return ACCESS_TOKEN_PREFIX + accessToken;
+		return JwtUtils.BEARER_PREFIX + accessToken;
     }
 
     /**
@@ -126,7 +135,8 @@ public class JwtTokenProviderImpl implements JwtTokenProvider {
 
 		return Jwts.builder()
 				.subject(userDetailsInfo.getUuid().toString())
-				.claim("role", userDetailsInfo.getUserRole())
+				.claim(JwtUtils.CLAIM_TOKEN_TYPE, TokenType.REFRESH.getValue())
+				.claim(JwtUtils.CLAIM_USER_ROLE, userDetailsInfo.getUserRole())
 				.issuedAt(now)
 				.expiration(new Date(now.getTime() + expiration))
 				.signWith(secretKey, Jwts.SIG.HS256)
@@ -137,11 +147,19 @@ public class JwtTokenProviderImpl implements JwtTokenProvider {
      * 토큰을 복호화(파싱)하여 내부의 데이터 묶음인 Claims를 추출합니다.
      * 서명 검증을 포함하며, 라이브러리 버전에 따라 parseSignedClaims와 getPayload를 사용합니다.
      */
-    private Claims parseClaims(String token) {
+	@Override
+    public Claims parseClaims(String token) {
         return Jwts.parser()
                 .verifyWith(secretKey)
                 .build()
-                .parseSignedClaims(token)
+                .parseSignedClaims(JwtUtils.normalizeToken(token))
                 .getPayload();
+    }
+
+    @Override
+    public long getRemainingTime(String token) {
+        Date expiration = parseClaims(token).getExpiration();
+        long now = new Date().getTime();
+        return Math.max(0, expiration.getTime() - now);
     }
 }

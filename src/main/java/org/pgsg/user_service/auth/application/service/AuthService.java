@@ -3,14 +3,11 @@ package org.pgsg.user_service.auth.application.service;
 import lombok.RequiredArgsConstructor;
 import org.pgsg.config.security.UserDetailsImpl;
 import org.pgsg.user_service.auth.application.dto.command.LoginUserCommand;
+import org.pgsg.user_service.auth.application.dto.command.ReissueUserCommand;
 import org.pgsg.user_service.auth.application.dto.command.SignupUserCommand;
 import org.pgsg.user_service.auth.application.dto.info.AuthInfo;
 import org.pgsg.user_service.auth.application.dto.info.SignupInfo;
-import org.pgsg.user_service.auth.domain.JwtTokenProvider;
-import org.pgsg.user_service.auth.domain.TokenRepository;
 import org.pgsg.user_service.auth.domain.UserAuthenticator;
-import org.pgsg.user_service.auth.domain.model.TokenPair;
-import org.pgsg.user_service.auth.infrastructure.JwtProperties;
 import org.pgsg.user_service.user.application.UserService;
 import org.pgsg.user_service.user.application.dto.command.CreateUserCommand;
 import org.pgsg.user_service.user.application.dto.info.UserDetailInfo;
@@ -18,57 +15,54 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.Duration;
 import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
 public class AuthService {
 
-    private final JwtProperties jwtProperties;
-    private final UserService userService;  // 분리할 경우 내부적으로 FeignClient를 사용하는 UserProvider로 대체 필요
-    private final JwtTokenProvider jwtTokenProvider;
-    private final TokenRepository tokenRepository;
-    private final UserAuthenticator userAuthenticator;
-    private final PasswordEncoder passwordEncoder;
+	private final UserService userService;
+	private final TokenService tokenService;
+	private final UserAuthenticator userAuthenticator;
+	private final PasswordEncoder passwordEncoder;
 
-    //로그인 기능
-    @Transactional
-    public AuthInfo login(LoginUserCommand command) {
+	@Transactional
+	public AuthInfo login(LoginUserCommand command) {
+		// 1. 사용자 인증 (비밀번호 확인)
+		UserDetailsImpl userDetail = userAuthenticator.verify(command.getUsername(), command.getPassword());
 
-        // 최초 로그인 시 비밀번호 검증
-        UserDetailsImpl userDetail = userAuthenticator.verify(command.getUsername(), command.getPassword());
+		// 2. 토큰 발급 및 저장 위임
+		return tokenService.issueTokenPair(userDetail);
+	}
 
-        // 토큰 생성 및 저장
-        TokenPair tokenPair = jwtTokenProvider.createTokenPair(userDetail);
-        tokenRepository.saveRefreshToken(
-                userDetail.getUuid(),
-                tokenPair.getRefreshToken(),
-                Duration.ofMillis(jwtProperties.getRefreshTokenExpiration())
-        );
+	@Transactional
+	public void logout(UUID userId, String accessToken) {
+		tokenService.deleteRefreshToken(userId);
+		tokenService.addToBlacklist(userId, accessToken);
+	}
 
-        return AuthInfo.from(tokenPair);
-    }
+	@Transactional
+	public SignupInfo signup(SignupUserCommand command) {
+		String encryptedPassword = passwordEncoder.encode(command.password());
+		CreateUserCommand createUserCommand = new CreateUserCommand(
+				command.username(),
+				encryptedPassword,
+				command.userRole(),
+				command.name(),
+				command.nickname(),
+				command.chatTimeRanges()
+		);
 
-    //로그아웃 기능
-    @Transactional
-    public void logout(UUID userId) {
-        tokenRepository.deleteRefreshToken(userId);
-    }
+		UserDetailInfo userInfo = userService.createUser(createUserCommand);
+		return SignupInfo.from(userInfo);
+	}
 
-    @Transactional
-    public SignupInfo signup(SignupUserCommand command) {
-        String encryptedPassword = passwordEncoder.encode(command.password());
-        CreateUserCommand createUserCommand = new CreateUserCommand(
-                command.username(),
-                encryptedPassword,
-                command.userRole(),
-                command.name(),
-                command.nickname(),
-                command.chatTimeRanges()
-        );
+	@Transactional
+	public AuthInfo reissue(ReissueUserCommand command) {
+		// 1. 인증기에게 토큰 검증 및 최신 정보 조회를 맡김
+		UserDetailsImpl userDetails = userAuthenticator.verifyToken(command.accessToken(), command.refreshToken());
 
-        UserDetailInfo userInfo = userService.createUser(createUserCommand);
-        return SignupInfo.from(userInfo);
-    }
+		// 2. 새로운 토큰 쌍 발급 및 저장 위임
+		return tokenService.issueTokenPair(userDetails);
+	}
 }

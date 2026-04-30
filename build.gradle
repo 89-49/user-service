@@ -30,12 +30,12 @@ repositories {
 
 dependencies {
 
-	implementation 'org.pgsg:common:0.0.1-SNAPSHOT'
+	implementation 'org.pgsg:common:0.1.0-SNAPSHOT'
 
 	// postgres - UUID 네이티브 타입 지원
 	runtimeOnly 'org.postgresql:postgresql'
 
-	// redis - RefreshToken 저장 + 블랙리스트
+	// redis - RefreshToken 저장 + 블랙리스트 -> user-service에 유지
 	implementation 'org.springframework.boot:spring-boot-starter-data-redis'
 
 	// lombok

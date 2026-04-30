@@ -2,6 +2,7 @@ package org.pgsg.user_service.user.domain.model;
 
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
+import org.pgsg.user_service.user.domain.exception.UserErrorCode;
 import org.pgsg.user_service.user.domain.exception.UserServiceException;
 
 import java.util.Arrays;
@@ -34,7 +35,7 @@ public enum UserRole {
 		return Arrays.stream(UserRole.values())
 				.filter(role -> role.isMatched(trimmedInfo))
 				.findAny()
-				.orElseThrow(() -> new UserServiceException("UserRoleNotFoundException"));
+				.orElseThrow(() -> new UserServiceException(UserErrorCode.USER_ROLE_NOT_FOUND));
 	}
 
 	private boolean isMatched(String roleInfo) {
