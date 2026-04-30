@@ -1,12 +1,14 @@
 package org.pgsg.user_service.auth.presentation.dto.request;
 
-import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.NotBlank;
 import org.pgsg.user_service.auth.application.dto.command.ReissueUserCommand;
 
 public record UserReissueRequest(
-		@NotNull
+
+		@NotBlank
 		String accessToken,
-		@NotNull
+
+		@NotBlank
 		String refreshToken
 ) {
 	public ReissueUserCommand toCommand() {
