@@ -78,7 +78,7 @@ public class UserService {
 	@Transactional(readOnly = true)
 	public LoginUserDetailInfo getUserForAuth(String username) {
 		User user = userRepository.findByUsername(username)
-				.orElseThrow(() -> new UserServiceException(UserErrorCode.USER_NOT_FOUND));
+				.orElseThrow(() -> new UserServiceException(UserErrorCode.USER_NOT_FOUND, "username"));
 
 		return LoginUserDetailInfo.from(user);
 	}

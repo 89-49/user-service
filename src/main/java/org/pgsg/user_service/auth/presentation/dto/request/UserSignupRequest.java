@@ -34,7 +34,6 @@ public record UserSignupRequest(
         String nickname,
 
         @Valid
-        @NotNull
         @NotEmpty(message = "[user.validation.user-info-chat-time.range-required]")
         List<ChatTimeRequest> chatTimeRanges
 ) {

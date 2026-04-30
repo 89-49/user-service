@@ -14,8 +14,6 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
-import java.util.Objects;
-
 @Slf4j
 @RestControllerAdvice
 @RequiredArgsConstructor
@@ -25,14 +23,20 @@ public class UserExceptionHandler implements GlobalExceptionAdvice {
 
 	@ExceptionHandler(MethodArgumentNotValidException.class)
 	public ResponseEntity<ErrorResponse> handleValidationException(MethodArgumentNotValidException e) {
-		FieldError fieldError = Objects.requireNonNull(e.getBindingResult().getFieldError());
+		FieldError fieldError = e.getBindingResult().getFieldError();
+		if (fieldError == null) {
+			String globalErrorKey = e.getBindingResult().getGlobalError() != null
+					? e.getBindingResult().getGlobalError().getDefaultMessage() : null;
+
+			return buildResponse(globalErrorKey, null, e);
+		}
 		String errorKey = fieldError.getDefaultMessage();
-		
+
 		UserErrorCode errorCode = UserErrorCode.fromErrorKey(errorKey);
 		if (errorCode != null) {
 			return buildResponse(errorCode.getErrorKey(), errorCode.getField(), e);
 		}
-		
+
 		return buildResponse(errorKey, fieldError.getField(), e);
 	}
 

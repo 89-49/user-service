@@ -23,8 +23,7 @@ public class AuthController {
     private final AuthService authService;
 
     @PostMapping("/login")
-    public UserLoginResponse login(
-            @RequestBody UserLoginRequest request) {
+    public UserLoginResponse login(@Valid @RequestBody UserLoginRequest request) {
 
         AuthInfo info = authService.login(request.toCommand());
 
