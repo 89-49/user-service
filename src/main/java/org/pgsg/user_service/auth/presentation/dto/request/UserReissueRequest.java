@@ -5,10 +5,10 @@ import org.pgsg.user_service.auth.application.dto.command.ReissueUserCommand;
 
 public record UserReissueRequest(
 
-		@NotBlank
+		@NotBlank(message = "[user.validation.reissue.access-token-required]")
 		String accessToken,
 
-		@NotBlank
+		@NotBlank(message = "[user.validation.reissue.refresh-token-required]")
 		String refreshToken
 ) {
 	public ReissueUserCommand toCommand() {

@@ -25,6 +25,10 @@ public enum UserErrorCode implements ErrorCode {
     CHAT_TIME_START_TIME_REQUIRED("[user.validation.user-info-chat-time.start-time-required]", "startTime"),
     CHAT_TIME_END_TIME_REQUIRED("[user.validation.user-info-chat-time.end-time-required]", "endTime"),
 
+    // 토큰 재발급 유효성
+    REISSUE_ACCESS_TOKEN_REQUIRED("[user.validation.reissue.access-token-required]", "accessToken"),
+    REISSUE_REFRESH_TOKEN_REQUIRED("[user.validation.reissue.refresh-token-required]", "refreshToken"),
+
     // 서비스 예외
     ADMIN_ACCESS_DENIED("[user.exception.access-denied.read-user-info]", "role"),
     UNAUTHORIZED_ROLE_ASSIGNMENT("[user.exception.access-denied.manager-assignment]", "userRole"),

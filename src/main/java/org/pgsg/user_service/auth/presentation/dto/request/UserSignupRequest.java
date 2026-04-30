@@ -33,9 +33,8 @@ public record UserSignupRequest(
         @Pattern(regexp = "^[a-zA-Z0-9가-힣]{1,20}$", message = "[user.validation.user-info-nickname.invalid-pattern]")
         String nickname,
 
-        @Valid
         @NotEmpty(message = "[user.validation.user-info-chat-time.range-required]")
-        List<ChatTimeRequest> chatTimeRanges
+        List<@NotNull @Valid ChatTimeRequest> chatTimeRanges
 ) {
     // 채팅 가능 시간 정보만을 담당하는 내부 중첩 record
     public record ChatTimeRequest(
@@ -62,7 +61,6 @@ public record UserSignupRequest(
                 name,
                 nickname,
                 chatTimeRanges.stream()
-                        .filter(Objects::nonNull)
                         .map(ChatTimeRequest::toCommand)
                         .toList()
         );
