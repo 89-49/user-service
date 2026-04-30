@@ -63,7 +63,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 				return;
 				
 			} catch (UserServiceException e) {
-				log.warn("[JwtFilter] 블랙리스트에 등록된 토큰 - {}", accessToken);
+				log.warn("[JwtFilter] 블랙리스트에 등록된 토큰");
 			} catch (JwtException | IllegalArgumentException e) {
 				log.warn("[JwtFilter] 토큰 검증/추출 중 오류 발생 - {}", e.getMessage());
 			}
