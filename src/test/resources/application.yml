@@ -1,6 +1,8 @@
 spring:
   application:
     name: user-service
+  profiles:
+    include: error, user-error
   config:
     import:
       - optional:configserver:${CONFIG_SERVER}

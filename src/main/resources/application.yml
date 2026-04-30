@@ -7,7 +7,7 @@ spring:
 
   profiles:
     active: dev
-    include: error
+    include: error, user-error
 
   # [필수 1] 설정 로드 순서 (중요)
   # .env를 먼저 읽어야 CONFIG_SERVER 주소를 확보하여 접속할 수 있습니다.(배포 환경)
