@@ -103,8 +103,14 @@ public class TokenService {
 	 */
 	public boolean isBlacklisted(String accessToken) {
 		// 토큰에서 사용자 ID를 추출하여 해당 키로 저장된 토큰이 있는지 확인
-		String normalizedToken = JwtUtils.normalizeToken(accessToken);
-		UUID userId = UUID.fromString(tokenProvider.getSubjectFromExpiredAccessToken(normalizedToken));
-		return tokenRepository.existsByBlacklist(userId, normalizedToken);
+		try {
+			String normalizedToken = JwtUtils.normalizeToken(accessToken);
+			UUID userId = UUID.fromString(tokenProvider.getSubjectFromExpiredAccessToken(normalizedToken));
+			return tokenRepository.existsByBlacklist(userId, normalizedToken);
+		} catch (Exception e) {
+			// 검증할 accessToken에서의 userId 추출 작업 실패 등 모든 예외 상황은
+			// 블랙리스트에 없는 것으로 간주(어차피 이후 게이트웨이 파싱에서 걸러짐)
+			return true;
+		}
 	}
 }
