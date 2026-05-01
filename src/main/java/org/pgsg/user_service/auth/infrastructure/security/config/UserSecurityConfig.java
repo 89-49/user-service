@@ -41,7 +41,7 @@ public class UserSecurityConfig implements SecurityConfig {
                         -> c.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/api/v1/auth/login", "/api/v1/auth/signup", "/api/v1/auth/reissue").permitAll()
-                        .requestMatchers("/internal/v1/users/**").permitAll()
+                        .requestMatchers("/internal/v1/**").permitAll()
                         .requestMatchers("/favicon.ico", "/error").permitAll()
                         .requestMatchers("/actuator/health", "/actuator/info").permitAll()
                         .anyRequest().authenticated()
