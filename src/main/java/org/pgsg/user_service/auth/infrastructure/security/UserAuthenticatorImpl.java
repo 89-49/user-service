@@ -10,11 +10,8 @@ import org.pgsg.user_service.user.domain.exception.UserServiceException;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
-import org.springframework.stereotype.Component;
 
 import java.util.UUID;
-
-// TODO: 로그아웃 여부 등 실시간 상태 확인은 반드시 여기서 checkBlacklist를 통해 수행 - user-service에 유지
 
 @RequiredArgsConstructor
 public class UserAuthenticatorImpl implements UserAuthenticator {
