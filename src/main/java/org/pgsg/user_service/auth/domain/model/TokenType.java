@@ -3,6 +3,7 @@ package org.pgsg.user_service.auth.domain.model;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
+@Deprecated
 @Getter
 @RequiredArgsConstructor
 public enum TokenType {

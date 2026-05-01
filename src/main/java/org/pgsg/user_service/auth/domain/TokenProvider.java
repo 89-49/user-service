@@ -7,6 +7,7 @@ import org.pgsg.user_service.auth.domain.model.TokenPair;
 import java.util.UUID;
 
 // TODO: 공통모듈의 common/domain/token 패키지로 이전 필요(gateway, user-service 모두 사용)
+@Deprecated
 public interface TokenProvider {
 
     // 사용자 식별값과 권한 정보를 바탕으로 토큰 생성

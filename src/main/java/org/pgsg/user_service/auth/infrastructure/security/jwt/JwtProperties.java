@@ -10,6 +10,7 @@ import org.springframework.context.annotation.Configuration;
 @ConfigurationProperties(prefix = "jwt")
 @Getter
 @Setter
+@Deprecated
 public class JwtProperties {
     private String secret;
     private Long accessTokenExpiration;

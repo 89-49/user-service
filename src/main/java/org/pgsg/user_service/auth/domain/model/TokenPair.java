@@ -7,6 +7,7 @@ import lombok.Getter;
 import java.util.Objects;
 
 // TODO: 공통모듈의 common/domain/token 패키지로 이전(게이트웨이, user-service에서 공통 사용)
+@Deprecated
 @Getter
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 public class TokenPair {

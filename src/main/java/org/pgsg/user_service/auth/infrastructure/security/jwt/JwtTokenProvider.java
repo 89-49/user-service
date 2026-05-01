@@ -23,6 +23,7 @@ import java.util.UUID;
 @Slf4j
 @Component
 @RequiredArgsConstructor
+@Deprecated
 public class JwtTokenProvider implements TokenProvider {
 
     private final JwtProperties jwtProperties;

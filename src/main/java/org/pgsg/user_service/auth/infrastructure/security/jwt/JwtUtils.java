@@ -3,6 +3,7 @@ package org.pgsg.user_service.auth.infrastructure.security.jwt;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 
+@Deprecated
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class JwtUtils {
 
