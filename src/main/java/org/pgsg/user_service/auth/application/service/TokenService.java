@@ -1,17 +1,17 @@
 package org.pgsg.user_service.auth.application.service;
 
-import io.jsonwebtoken.Jwe;
 import io.jsonwebtoken.JwtException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.pgsg.config.security.UserDetailsImpl;
+import org.pgsg.config.security.jwt.JwtProperties;
+import org.pgsg.config.security.jwt.JwtUtils;
+import org.pgsg.config.security.token.TokenPair;
+import org.pgsg.config.security.token.TokenProvider;
+import org.pgsg.config.security.token.TokenType;
 import org.pgsg.user_service.auth.application.dto.info.AuthInfo;
-import org.pgsg.user_service.auth.domain.TokenProvider;
+
 import org.pgsg.user_service.auth.domain.TokenRepository;
-import org.pgsg.user_service.auth.domain.model.TokenPair;
-import org.pgsg.user_service.auth.domain.model.TokenType;
-import org.pgsg.user_service.auth.infrastructure.security.jwt.JwtProperties;
-import org.pgsg.user_service.auth.infrastructure.security.jwt.JwtUtils;
 import org.pgsg.user_service.user.domain.exception.UserErrorCode;
 import org.pgsg.user_service.user.domain.exception.UserServiceException;
 import org.springframework.stereotype.Service;
