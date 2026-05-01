@@ -108,8 +108,7 @@ public class TokenService {
 			UUID userId = UUID.fromString(tokenProvider.getSubjectFromExpiredAccessToken(normalizedToken));
 			return tokenRepository.existsByBlacklist(userId, normalizedToken);
 		} catch (Exception e) {
-			// 검증할 accessToken에서의 userId 추출 작업 실패 등 모든 예외 상황은
-			// 블랙리스트에 없는 것으로 간주(어차피 이후 게이트웨이 파싱에서 걸러짐)
+			// try 블록 안에서 발생한 모든 예외 상황은 토큰이 블랙리스트에 포함된 것과 동일하게 간주
 			return true;
 		}
 	}
