@@ -4,7 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.pgsg.user_service.user.application.UserService;
 import org.pgsg.user_service.user.application.dto.info.LoginUserDetailInfo;
 import org.pgsg.user_service.user.application.dto.info.UserDetailInfo;
-import org.pgsg.user_service.user.presentation.dto.response.LoginUserResponse;
+import org.pgsg.user_service.user.presentation.dto.response.UserLoginResponse;
 import org.pgsg.user_service.user.presentation.dto.response.UserDetailResponse;
 import org.springframework.web.bind.annotation.*;
 
@@ -18,10 +18,10 @@ public class UserInternalController {
 	private final UserService userService;
 
 	@GetMapping
-	public LoginUserResponse getUser(@RequestParam(value = "username") String username) {
+	public UserLoginResponse getUser(@RequestParam(value = "username") String username) {
 		LoginUserDetailInfo userDetailInfo = userService.getUserForAuth(username);
 
-		return LoginUserResponse.from(userDetailInfo);
+		return UserLoginResponse.from(userDetailInfo);
 	}
 
 	@GetMapping("/{userId}")
