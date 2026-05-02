@@ -3,13 +3,10 @@ package org.pgsg.user_service.auth.presentation.dto.request;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.*;
 import org.pgsg.user_service.auth.application.dto.command.SignupUserCommand;
-import org.pgsg.user_service.user.application.dto.command.CreateChatTimeCommand;
 import org.pgsg.user_service.user.domain.model.UserRole;
+import org.pgsg.user_service.user.presentation.dto.request.ChatTimeRequest;
 
-import java.time.DayOfWeek;
-import java.time.LocalTime;
 import java.util.List;
-import java.util.Objects;
 
 public record UserSignupRequest(
 
@@ -36,22 +33,6 @@ public record UserSignupRequest(
         @NotEmpty(message = "[user.validation.user-info-chat-time.range-required]")
         List<@NotNull @Valid ChatTimeRequest> chatTimeRanges
 ) {
-    // 채팅 가능 시간 정보만을 담당하는 내부 중첩 record
-    public record ChatTimeRequest(
-            @NotNull(message = "[user.validation.user-info-chat-time.day-of-week-required]")
-            DayOfWeek dayOfWeek,
-
-            @NotNull(message = "[user.validation.user-info-chat-time.start-time-required]")
-            LocalTime startTime,
-
-            @NotNull(message = "[user.validation.user-info-chat-time.end-time-required]")
-            LocalTime endTime
-    ) {
-        public CreateChatTimeCommand toCommand() {
-            return new CreateChatTimeCommand(dayOfWeek, startTime, endTime);
-        }
-    }
-
     // Request DTO를 서비스 계층에서 사용할 Command 객체로 변환
     public SignupUserCommand toCommand() {
         return new SignupUserCommand(
