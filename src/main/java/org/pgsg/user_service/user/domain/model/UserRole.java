@@ -6,6 +6,7 @@ import org.pgsg.user_service.user.domain.exception.UserErrorCode;
 import org.pgsg.user_service.user.domain.exception.UserServiceException;
 
 import java.util.Arrays;
+import java.util.Optional;
 
 @Getter
 @RequiredArgsConstructor
@@ -25,16 +26,18 @@ public enum UserRole {
 		return userRole == MANAGER || userRole == MASTER;
 	}
 
-	public static UserRole find(String userRoleInfo) {
+	public static Optional<UserRole> of(String userRoleInfo) {
 		if (userRoleInfo == null || userRoleInfo.isBlank()) {
-			throw new IllegalArgumentException("권한 정보가 비어있습니다.");
+			return Optional.empty();
 		}
-
 		String trimmedInfo = userRoleInfo.trim();
-
 		return Arrays.stream(UserRole.values())
 				.filter(role -> role.isMatched(trimmedInfo))
-				.findAny()
+				.findAny();
+	}
+
+	public static UserRole find(String userRoleInfo) {
+		return UserRole.of(userRoleInfo)
 				.orElseThrow(() -> new UserServiceException(UserErrorCode.USER_ROLE_NOT_FOUND));
 	}
 

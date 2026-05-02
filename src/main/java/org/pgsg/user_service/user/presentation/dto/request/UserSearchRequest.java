@@ -13,7 +13,7 @@ public record UserSearchRequest(
 	public SearchUserQuery toQuery() {
 		return new SearchUserQuery(
 				keyword(),
-				UserRole.find(userRole()),
+				UserRole.of(userRole()).orElse(null),
 				name(),
 				nickname(),
 				username()
