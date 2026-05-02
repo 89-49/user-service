@@ -8,7 +8,7 @@ import org.pgsg.user_service.auth.application.dto.command.SignupUserCommand;
 import org.pgsg.user_service.auth.application.dto.info.AuthInfo;
 import org.pgsg.user_service.auth.application.dto.info.SignupInfo;
 import org.pgsg.user_service.auth.domain.UserAuthenticator;
-import org.pgsg.user_service.user.application.UserService;
+import org.pgsg.user_service.user.application.UserCommandFacade;
 import org.pgsg.user_service.user.application.dto.command.CreateUserCommand;
 import org.pgsg.user_service.user.application.dto.info.UserDetailInfo;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -21,7 +21,7 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class AuthService {
 
-	private final UserService userService;
+	private final UserCommandFacade userCommandFacade;
 	private final TokenService tokenService;
 	private final UserAuthenticator userAuthenticator;
 	private final PasswordEncoder passwordEncoder;
@@ -53,7 +53,7 @@ public class AuthService {
 				command.chatTimeRanges()
 		);
 
-		UserDetailInfo userInfo = userService.createUser(createUserCommand);
+		UserDetailInfo userInfo = userCommandFacade.createUser(createUserCommand);
 		return SignupInfo.from(userInfo);
 	}
 

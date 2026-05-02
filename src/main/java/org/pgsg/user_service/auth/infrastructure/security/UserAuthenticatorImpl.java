@@ -4,7 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.pgsg.config.security.UserDetailsImpl;
 import org.pgsg.user_service.auth.application.service.TokenService;
 import org.pgsg.user_service.auth.domain.UserAuthenticator;
-import org.pgsg.user_service.user.application.UserService;
+import org.pgsg.user_service.user.application.UserQueryFacade;
 import org.pgsg.user_service.user.domain.exception.UserErrorCode;
 import org.pgsg.user_service.user.domain.exception.UserServiceException;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -19,7 +19,7 @@ public class UserAuthenticatorImpl implements UserAuthenticator {
     // 공통 모듈에서 커스터마이징한 UserDetailsImpl을 사용하기 위해 AuthenticationManager를 사용
     private final AuthenticationManager authenticationManager;
     private final TokenService tokenService;
-    private final UserService userService;
+    private final UserQueryFacade userQueryFacade;
 
     @Override
     public UserDetailsImpl verify(String username, String rawPassword) {
@@ -41,7 +41,7 @@ public class UserAuthenticatorImpl implements UserAuthenticator {
         UUID userId = tokenService.verifyTokenPair(accessToken, refreshToken);
 
         // 3. 최신 사용자 정보를 담은 UserDetailsImpl 반환 (인증기 본연의 역할)
-        return userService.getUserForAuth(userId).toUserDetails();
+        return userQueryFacade.getUserForAuth(userId).toUserDetails();
     }
 
     @Override
