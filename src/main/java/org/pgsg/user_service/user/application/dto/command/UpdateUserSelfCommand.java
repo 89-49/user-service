@@ -2,6 +2,7 @@ package org.pgsg.user_service.user.application.dto.command;
 
 import org.pgsg.user_service.user.domain.model.ChatTimeRange;
 
+import java.util.Comparator;
 import java.util.List;
 import java.util.UUID;
 
@@ -18,6 +19,8 @@ public record UpdateUserSelfCommand(
 		}
 		return chatTimeRanges.stream()
 				.map(CreateChatTimeCommand::toChatTime)
+				.sorted(Comparator.comparing(ChatTimeRange::getDayOfWeek)
+						.thenComparing(ChatTimeRange::getStartTime))
 				.toList();
 	}
 }
