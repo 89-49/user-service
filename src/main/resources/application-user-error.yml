@@ -89,7 +89,7 @@ error:
       message: "해당 회원을 찾을 수 없습니다."
       status: 404
 
-    "[user.exception.conflict.duplicate-username]":
+    "[user.exception.conflict.duplicate-user]":
       code: "U018"
       message: "이미 등록된 회원입니다."
       status: 409
@@ -115,3 +115,7 @@ error:
       message: "리프레시 토큰은 필수 입력 값입니다."
       status: 400
 
+    "[user.exception.conflict.save-failure]":
+      code: "U023"
+      message: "회원정보 등록에 실패했습니다."
+      status: 500
