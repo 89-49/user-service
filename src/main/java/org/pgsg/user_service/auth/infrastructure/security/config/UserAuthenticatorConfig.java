@@ -4,7 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.pgsg.user_service.auth.application.service.TokenService;
 import org.pgsg.user_service.auth.domain.UserAuthenticator;
 import org.pgsg.user_service.auth.infrastructure.security.UserAuthenticatorImpl;
-import org.pgsg.user_service.user.application.UserService;
+import org.pgsg.user_service.user.application.UserQueryFacade;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -16,7 +16,7 @@ public class UserAuthenticatorConfig {
 
 	private final AuthenticationConfiguration authenticationConfiguration;
 	private final TokenService tokenService;
-	private final UserService userService;
+	private final UserQueryFacade userQueryFacade;
 
 	@Bean
 	public AuthenticationManager authenticationManager(AuthenticationConfiguration configuration) throws Exception {
@@ -28,7 +28,7 @@ public class UserAuthenticatorConfig {
 		return new UserAuthenticatorImpl(
 				authenticationConfiguration.getAuthenticationManager(),
 				tokenService,
-				userService
+				userQueryFacade
 		);
 	}
 }

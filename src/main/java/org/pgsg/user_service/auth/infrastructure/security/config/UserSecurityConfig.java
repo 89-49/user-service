@@ -46,13 +46,13 @@ public class UserSecurityConfig implements SecurityConfig {
                         .requestMatchers("/actuator/health", "/actuator/info").permitAll()
                         .anyRequest().authenticated()
                 )
+                // LoginFilter는 회원 아이디, 비밀번호 검증 이전에 먼저 실행 -> 이미 SecurityContext에 등록된 사용자 정보가 있으면 자동 통과
+                .addFilterBefore(loginFilter, UsernamePasswordAuthenticationFilter.class)
                 // JwtAuthenticationFilter가 먼저 실행되어 헤더를 세팅
                 .addFilterBefore(
                         new JwtAuthenticationFilter(jwtTokenProvider, userAuthenticator),
-                        UsernamePasswordAuthenticationFilter.class
+                        LoginFilter.class
                 )
-                // LoginFilter가 그 다음 실행되어 SecurityContext 저장
-                .addFilterAfter(loginFilter, JwtAuthenticationFilter.class)
                 .exceptionHandling(c -> {
                     c.authenticationEntryPoint(authenticationEntryPoint);
                     c.accessDeniedHandler(accessDeniedHandler);

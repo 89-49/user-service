@@ -7,6 +7,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 
 import java.util.List;
+import java.util.UUID;
 
 @Component
 public class SecurityRoleCheck implements RoleCheck {
@@ -35,6 +36,19 @@ public class SecurityRoleCheck implements RoleCheck {
 					// 3. 현재 사용자의 권한이 파라미터에서 지정한 권한 중 하나에 해당되는지 확인
 					return allowedUserRoles.contains(currentUserRole);
 				})
+				.orElse(false);
+	}
+
+	@Override
+	public boolean checkUserAdmin(UserRole targetUserRole) {
+		// 지정한 회원의 권한 검사용
+		return UserRole.isAdmin(targetUserRole);
+	}
+
+	@Override
+	public boolean checkUserSelf(UUID userId) {
+		return SecurityUtil.getCurrentUserId()
+				.map(currentUserId -> currentUserId.equals(userId))
 				.orElse(false);
 	}
 }

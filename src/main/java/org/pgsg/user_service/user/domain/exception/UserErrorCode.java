@@ -33,9 +33,12 @@ public enum UserErrorCode implements ErrorCode {
     ADMIN_ACCESS_DENIED("[user.exception.access-denied.read-user-info]", "role"),
     UNAUTHORIZED_ROLE_ASSIGNMENT("[user.exception.access-denied.manager-assignment]", "userRole"),
     USER_NOT_FOUND("[user.exception.not-found.user]", "userId"),
-    DUPLICATE_USERNAME("[user.exception.conflict.duplicate-username]", "username"),
+    DUPLICATE_USER("[user.exception.conflict.duplicate-user]", "username"),
     USER_ROLE_NOT_FOUND("[user.exception.not-found.user-role]", "userRole"),
-    UNAUTHORIZED("[user.exception.unauthorized.invalid-user]", "authentication");
+    UNAUTHORIZED("[user.exception.unauthorized.invalid-user]", "authentication"),
+    SAVE_FAILURE("[user.exception.internal-error.save-user-failure]", "user")
+
+    ;
 
     private final String errorKey;
     @Getter

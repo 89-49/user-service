@@ -2,7 +2,7 @@ package org.pgsg.user_service.auth.infrastructure.security;
 
 import lombok.RequiredArgsConstructor;
 import org.pgsg.user_service.user.domain.exception.UserServiceException;
-import org.pgsg.user_service.user.application.UserService;
+import org.pgsg.user_service.user.application.UserQueryFacade;
 import org.pgsg.user_service.user.application.dto.info.LoginUserDetailInfo;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -15,12 +15,12 @@ import org.springframework.stereotype.Service;
 @RequiredArgsConstructor
 public class UserDetailsServiceImpl implements UserDetailsService {
 
-    private final UserService userService;	// 추후 FeignClient로 교체될 지점
+    private final UserQueryFacade userQueryFacade;	// 추후 FeignClient로 교체될 지점
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
 		try {
-			LoginUserDetailInfo loginDetails = userService.getUserForAuth(username);
+			LoginUserDetailInfo loginDetails = userQueryFacade.getUserForAuth(username);
 
             // 공통모듈에서 제공하는 커스텀 UserDetailsImpl로 반환
             // 커스텀 UserDetailsImpl을 사용하기 위해 AuthenticationManager를 사용한 방식으로 전환함
