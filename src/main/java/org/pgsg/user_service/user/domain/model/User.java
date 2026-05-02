@@ -49,6 +49,7 @@ public class User extends BaseEntity {
 
 	@ElementCollection(fetch = FetchType.LAZY)
 	@CollectionTable(name = "p_chat_time_range", joinColumns = @JoinColumn(name = "user_id"))
+	@OrderBy("dayOfWeek ASC, startTime ASC")
 	private final List<ChatTimeRange> chatTimeRanges = new ArrayList<>();
 
 	@Builder(access = AccessLevel.PRIVATE)
@@ -70,12 +71,24 @@ public class User extends BaseEntity {
 				.build();
 	}
 
-	public void update(String name, String nickname) {
+	public void updateProfile(String name, String nickname) {
 		if (name != null) {
 			this.name = name;
 		}
 		if (nickname != null) {
 			this.nickname = nickname;
+		}
+	}
+
+	public void updateRole(UserRole userRole) {
+		if (userRole != null) {
+			this.userRole = userRole;
+		}
+	}
+
+	public void updatePassword(String password) {
+		if (password != null) {
+			this.password = password;
 		}
 	}
 
@@ -90,12 +103,20 @@ public class User extends BaseEntity {
 		return this.deletedAt == null;
 	}
 
-	// TODO: 채팅가능시간 관련 세부 로직 추가(인증 로직 구현 이후 회원 관련 기능 구현 시)
+
 	public void addChatTimeRangeList(List<ChatTimeRange> chatTimeRanges) {
 		this.chatTimeRanges.addAll(chatTimeRanges);
 	}
 
-	public void addChatTimeRange(ChatTimeRange chatTimeRange) {
-		addChatTimeRangeList(List.of(chatTimeRange));
+	public void updateChatTimeRanges(List<ChatTimeRange> chatTimeRanges) {
+		if (chatTimeRanges != null) {
+			this.chatTimeRanges.clear();
+			this.chatTimeRanges.addAll(chatTimeRanges);
+		}
+	}
+
+	public void clearChatTimeRanges() {
+		this.chatTimeRanges.clear();
 	}
 }
+
