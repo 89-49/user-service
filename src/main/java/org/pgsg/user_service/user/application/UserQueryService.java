@@ -34,12 +34,7 @@ public class UserQueryService {
 
 	@Transactional(readOnly = true)
 	public Page<User> getUserList(SearchUserQuery searchQuery, Pageable pageable) {
-		Page<User> userPages = userRepository.findAll(searchQuery, pageable);
 
-		if (userPages.isEmpty()) {
-			throw new UserServiceException(UserErrorCode.USER_NOT_FOUND, "userList");
-		}
-
-		return userPages;
+		return userRepository.findAll(searchQuery, pageable);
 	}
 }

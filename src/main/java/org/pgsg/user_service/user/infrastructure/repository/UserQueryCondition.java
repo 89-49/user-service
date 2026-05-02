@@ -46,11 +46,11 @@ public class UserQueryCondition {
 	}
 
 	private static BooleanExpression nameContains(String name) {
-		return StringUtils.hasText(name) ? user.nickname.containsIgnoreCase(name) : null;
+		return StringUtils.hasText(name) ? user.name.containsIgnoreCase(name) : null;
 	}
 
 	private static BooleanExpression usernameContains(String username) {
-		return StringUtils.hasText(username) ? user.nickname.containsIgnoreCase(username) : null;
+		return StringUtils.hasText(username) ? user.username.containsIgnoreCase(username) : null;
 	}
 
 

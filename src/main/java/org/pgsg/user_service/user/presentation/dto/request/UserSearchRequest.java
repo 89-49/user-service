@@ -14,8 +14,8 @@ public record UserSearchRequest(
 		return new SearchUserQuery(
 				keyword(),
 				UserRole.of(userRole()).orElse(null),
-				name(),
 				nickname(),
+				name(),
 				username()
 		);
 	}
