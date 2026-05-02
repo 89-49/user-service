@@ -1,0 +1,65 @@
+package org.pgsg.user_service.user.application;
+
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.pgsg.user_service.user.application.dto.info.LoginUserDetailInfo;
+import org.pgsg.user_service.user.application.dto.info.UserDetailInfo;
+import org.pgsg.user_service.user.application.dto.query.SearchUserQuery;
+import org.pgsg.user_service.user.application.dto.result.UserSearchResult;
+import org.pgsg.user_service.user.domain.exception.UserErrorCode;
+import org.pgsg.user_service.user.domain.exception.UserServiceException;
+import org.pgsg.user_service.user.domain.model.User;
+import org.pgsg.user_service.user.domain.model.UserRole;
+import org.pgsg.user_service.user.domain.service.RoleCheck;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.stereotype.Service;
+
+import java.util.List;
+import java.util.UUID;
+
+@Slf4j
+@Service
+@RequiredArgsConstructor
+public class UserQueryFacade {
+
+	private final UserQueryService userQueryService;
+	private final RoleCheck roleCheck;
+
+	public UserDetailInfo getUserForAdmin(UUID userId) {
+		if (!roleCheck.hasRole(List.of(UserRole.MANAGER, UserRole.MASTER))) {
+			throw new UserServiceException(UserErrorCode.ADMIN_ACCESS_DENIED);
+		}
+
+		return getUser(userId);
+	}
+
+	public UserDetailInfo getUser(UUID userId) {
+		User user = userQueryService.getUser(userId);
+
+		return UserDetailInfo.from(user);
+	}
+
+	public LoginUserDetailInfo getUserForAuth(UUID userId) {
+		// 토큰 재발급용
+		User user = userQueryService.getUser(userId);
+
+		return LoginUserDetailInfo.from(user);
+	}
+
+	public LoginUserDetailInfo getUserForAuth(String username) {
+		User user = userQueryService.getUserForAuth(username);
+
+		return LoginUserDetailInfo.from(user);
+	}
+
+	public Page<UserSearchResult> getUserList(SearchUserQuery searchQuery, Pageable pageable) {
+		if (!roleCheck.hasRole(List.of(UserRole.MANAGER, UserRole.MASTER))) {
+			throw new UserServiceException(UserErrorCode.ADMIN_ACCESS_DENIED);
+		}
+
+		Page<User> userList = userQueryService.getUserList(searchQuery, pageable);
+
+		return userList.map(UserSearchResult::from);
+	}
+}
