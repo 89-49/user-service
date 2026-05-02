@@ -2,7 +2,8 @@ package org.pgsg.user_service.user.application;
 
 import lombok.RequiredArgsConstructor;
 import org.pgsg.user_service.user.application.dto.command.CreateUserCommand;
-import org.pgsg.user_service.user.application.dto.command.UpdateUserCommand;
+import org.pgsg.user_service.user.application.dto.command.UpdateUserAdminCommand;
+import org.pgsg.user_service.user.application.dto.command.UpdateUserSelfCommand;
 import org.pgsg.user_service.user.domain.exception.UserErrorCode;
 import org.pgsg.user_service.user.domain.exception.UserServiceException;
 import org.pgsg.user_service.user.domain.model.User;
@@ -36,24 +37,38 @@ public class UserCommandService {
 	}
 
 	@Transactional
-	public User updateUser(UpdateUserCommand updateCommand) {
+	public User updateUserProfile(UpdateUserSelfCommand updateCommand) {
 		User targetUser = userRepository.findById(updateCommand.userId())
 				.orElseThrow(() -> new UserServiceException(UserErrorCode.USER_NOT_FOUND));
 
-		targetUser.update(
-				updateCommand.name(),
-				updateCommand.nickname()
-		);
+		targetUser.updateProfile(updateCommand.name(), updateCommand.nickname());
+		targetUser.updatePassword(updateCommand.password());
+		targetUser.updateChatTimeRanges(updateCommand.toChatTimeRangeList());
 
 		// TODO: 회원정보 수정 완료 -> 다른 도메인에 저장된 회원 정보를 업데이트하기 위한 이벤트 발행
 
 		return targetUser;
 	}
 
+	@Transactional
+	public User updateUserByAdmin(UpdateUserAdminCommand updateCommand) {
+		User targetUser = userRepository.findById(updateCommand.userId())
+				.orElseThrow(() -> new UserServiceException(UserErrorCode.USER_NOT_FOUND));
+
+		targetUser.updateProfile(updateCommand.name(), updateCommand.nickname());
+		targetUser.updateRole(updateCommand.userRole());
+
+		// TODO: 회원정보 수정 완료 -> 다른 도메인에 저장된 회원 정보를 업데이트하기 위한 이벤트 발행
+
+		return targetUser;
+	}
+
+	@Transactional
 	public User deleteUser(UUID userId) {
 		User targetUser = userRepository.findById(userId)
 				.orElseThrow(() -> new UserServiceException(UserErrorCode.USER_NOT_FOUND));
 
+		targetUser.clearChatTimeRanges();
 		targetUser.delete(userId);
 
 		return targetUser;
