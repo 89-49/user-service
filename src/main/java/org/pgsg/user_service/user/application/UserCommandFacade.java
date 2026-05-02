@@ -19,12 +19,14 @@ public class UserCommandFacade {
 	private final UserCommandService userCommandService;
 	private final RoleCheck roleCheck;
 
-	public UserDetailInfo createUser(CreateUserCommand createdUserCommand) {
-		if (UserRole.isAdmin(createdUserCommand.userRole()) && !roleCheck.hasRole(UserRole.MASTER)) {
+	public UserDetailInfo createUser(CreateUserCommand createUserCommand) {
+		UserRole newUserRole = createUserCommand.userRole();
+
+		if (roleCheck.checkUserAdmin(newUserRole) && !roleCheck.hasRole(UserRole.MASTER)) {
 			throw new UserServiceException(UserErrorCode.UNAUTHORIZED_ROLE_ASSIGNMENT);
 		}
 
-		User user = userCommandService.createUser(createdUserCommand);
+		User user = userCommandService.createUser(createUserCommand);
 
 		return UserDetailInfo.from(user);
 	}

@@ -9,5 +9,6 @@ public interface RoleCheck {
 
 	boolean hasRole(UserRole userRoles);
 	boolean hasRole(List<UserRole> userRoles);
-	boolean isMe(UUID userId);
+	boolean checkUserAdmin(UserRole targetUserRole);
+	boolean checkUserSelf(UUID userId);
 }

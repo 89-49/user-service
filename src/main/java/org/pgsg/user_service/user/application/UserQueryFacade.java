@@ -26,14 +26,27 @@ public class UserQueryFacade {
 	private final UserQueryService userQueryService;
 	private final RoleCheck roleCheck;
 
-	public UserDetailInfo getUserForAdmin(UUID userId) {
-		if (!roleCheck.hasRole(List.of(UserRole.MANAGER, UserRole.MASTER))) {
+	// /api/v1/users/** 기반 조회, 검색용
+	public UserDetailInfo getUserWithAuthCheck(UUID userId) {
+		if (!roleCheck.hasRole(List.of(UserRole.MANAGER, UserRole.MASTER)) || !roleCheck.checkUserSelf(userId)) {
 			throw new UserServiceException(UserErrorCode.ADMIN_ACCESS_DENIED);
 		}
 
 		return getUser(userId);
 	}
 
+	public Page<UserSearchResult> getUserList(SearchUserQuery searchQuery, Pageable pageable) {
+		if (!roleCheck.hasRole(List.of(UserRole.MANAGER, UserRole.MASTER))) {
+			throw new UserServiceException(UserErrorCode.ADMIN_ACCESS_DENIED);
+		}
+
+		Page<User> userList = userQueryService.getUserList(searchQuery, pageable);
+
+		return userList.map(UserSearchResult::from);
+	}
+
+
+	// /internal/v1/** 기반 조회, 인증용
 	public UserDetailInfo getUser(UUID userId) {
 		User user = userQueryService.getUser(userId);
 
@@ -51,15 +64,5 @@ public class UserQueryFacade {
 		User user = userQueryService.getUserForAuth(username);
 
 		return LoginUserDetailInfo.from(user);
-	}
-
-	public Page<UserSearchResult> getUserList(SearchUserQuery searchQuery, Pageable pageable) {
-		if (!roleCheck.hasRole(List.of(UserRole.MANAGER, UserRole.MASTER))) {
-			throw new UserServiceException(UserErrorCode.ADMIN_ACCESS_DENIED);
-		}
-
-		Page<User> userList = userQueryService.getUserList(searchQuery, pageable);
-
-		return userList.map(UserSearchResult::from);
 	}
 }
