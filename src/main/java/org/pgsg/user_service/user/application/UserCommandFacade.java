@@ -3,13 +3,19 @@ package org.pgsg.user_service.user.application;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.pgsg.user_service.user.application.dto.command.CreateUserCommand;
+import org.pgsg.user_service.user.application.dto.command.UpdateUserCommand;
 import org.pgsg.user_service.user.application.dto.info.UserDetailInfo;
+import org.pgsg.user_service.user.application.dto.result.UserDeleteResult;
+import org.pgsg.user_service.user.application.dto.result.UserUpdateResult;
 import org.pgsg.user_service.user.domain.exception.UserErrorCode;
 import org.pgsg.user_service.user.domain.exception.UserServiceException;
 import org.pgsg.user_service.user.domain.model.User;
 import org.pgsg.user_service.user.domain.model.UserRole;
 import org.pgsg.user_service.user.domain.service.RoleCheck;
 import org.springframework.stereotype.Service;
+
+import java.util.List;
+import java.util.UUID;
 
 @Slf4j
 @Service
@@ -29,5 +35,30 @@ public class UserCommandFacade {
 		User user = userCommandService.createUser(createUserCommand);
 
 		return UserDetailInfo.from(user);
+	}
+
+	public UserUpdateResult updateUser(UpdateUserCommand command) {
+		if (!roleCheck.hasRole(List.of(UserRole.MANAGER, UserRole.MASTER))
+				&& !roleCheck.checkUserSelf(command.userId())) {
+			throw new UserServiceException(UserErrorCode.UNAUTHORIZED_USER_UPDATE);
+		}
+
+		User updatedUser = userCommandService.updateUser(command);
+
+		return UserUpdateResult.from(updatedUser);
+	}
+
+	public UserDeleteResult deleteUser(UUID userId) {
+		if (!roleCheck.hasRole(List.of(UserRole.MANAGER, UserRole.MASTER)) && !roleCheck.checkUserSelf(userId)) {
+			throw new UserServiceException(UserErrorCode.UNAUTHORIZED);
+		}
+
+		// TODO: 현재 구매 진행 중인 상품이 있는지 검증하는 로직 추가
+
+		// TODO: 상품 목록 조회 시, 현재 예약이나 거래 진행 중인 상품이 있는지 검증하는 로직 추가
+
+		User user = userCommandService.deleteUser(userId);
+
+		return UserDeleteResult.from(user);
 	}
 }
