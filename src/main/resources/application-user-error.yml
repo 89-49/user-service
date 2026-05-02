@@ -115,7 +115,7 @@ error:
       message: "리프레시 토큰은 필수 입력 값입니다."
       status: 400
 
-    "[user.exception.conflict.save-failure]":
+    "[user.exception.internal-error.save-user-failure]":
       code: "U023"
       message: "회원정보 등록에 실패했습니다."
       status: 500
