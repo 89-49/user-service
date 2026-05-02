@@ -7,6 +7,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.SQLRestriction;
 import org.pgsg.common.domain.BaseEntity;
+import org.pgsg.user_service.user.domain.exception.UserErrorCode;
+import org.pgsg.user_service.user.domain.exception.UserServiceException;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -66,6 +68,22 @@ public class User extends BaseEntity {
 				.name(name)
 				.nickname(nickname)
 				.build();
+	}
+
+	public void update(String name, String nickname) {
+		if (name != null) {
+			this.name = name;
+		}
+		if (nickname != null) {
+			this.nickname = nickname;
+		}
+	}
+
+	public void delete(UUID userId) {
+		if (this.userId != userId) {
+			throw new UserServiceException(UserErrorCode.UNAUTHORIZED);
+		}
+		super.delete(userId);
 	}
 
 	public boolean isEnabled() {
