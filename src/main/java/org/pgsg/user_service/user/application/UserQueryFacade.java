@@ -28,7 +28,7 @@ public class UserQueryFacade {
 
 	// /api/v1/users/** 기반 조회, 검색용
 	public UserDetailInfo getUserWithAuthCheck(UUID userId) {
-		if (!roleCheck.hasRole(List.of(UserRole.MANAGER, UserRole.MASTER)) || !roleCheck.checkUserSelf(userId)) {
+		if (!roleCheck.hasRole(List.of(UserRole.MANAGER, UserRole.MASTER)) && !roleCheck.checkUserSelf(userId)) {
 			throw new UserServiceException(UserErrorCode.ADMIN_ACCESS_DENIED);
 		}
 
