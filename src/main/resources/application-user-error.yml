@@ -119,3 +119,8 @@ error:
       code: "U023"
       message: "회원정보 등록에 실패했습니다."
       status: 500
+
+    "[user.exception.access-denied.user-update]":
+      code: "U024"
+      message: "회원정보를 수정할 권한이 없습니다."
+      status: 403

@@ -6,7 +6,7 @@ spring:
     name: user-service
 
   profiles:
-    active: dev
+    active: dev, kafka
     include: error, user-error
 
   # [필수 1] 설정 로드 순서 (중요)
@@ -19,6 +19,8 @@ spring:
   # [필수 2] 로컬 우선순위 설정
   # 로컬 .env나 환경변수가 원격 Config Server의 환경변수 값을 덮어쓰도록 허용합니다.
   cloud:
+    client:
+      hostname: ${HOSTNAME}
     config:
       allow-override: true
       override-none: true
@@ -32,32 +34,14 @@ spring:
   main:
     allow-bean-definition-overriding: true
 
-  # config-server에 명시적으로 설정되어 있으나, 로컬 환경에서 환경변수값을 변경하기 쉽도록 추가함
-  datasource:
-    driver-class-name: org.postgresql.Driver
-    username: ${DB_USERNAME}
-    password: ${DB_PASSWORD}
-    url: ${DB_URL}
-
-  sql:
-    init:
-      mode: always
-
-  data:
-    redis:
-      host: ${REDIS_HOST:localhost}
-      port: ${REDIS_PORT:6379}
-
-  jpa:
-    # configs에 포함된 설정이나, 초기 배포 시 설정 변경의 편의를 위해 환경변수를 사용
-    # (.env 파일 내부의 값만 변경하면 됨)
-    hibernate:
-      ddl-auto: ${SPRING_JPA_HIBERNATE_DDL-AUTO:validate}
-    show_sql: ${SPRING_JPA_SHOW-SQL:false}
-    # JPA가 준비된 이후 src/main/resources/data.sql 파일의 MASTER 등록 쿼리 실행
-    defer-datasource-initialization: true
-
 # [필수 4] 보안 설정
 # JWT 관련 값은 보안상 로컬 .env에서 관리하는 것이 가장 안전합니다.
 jwt:
   secret: ${JWT_SECRET}
+  access-token-expiration: ${JWT_ACCESS_EXPIRATION:1800000}
+  refresh-token-expiration: ${JWT_REFRESH_EXPIRATION:604800000}
+
+eureka:
+  instance:
+    prefer-ip-address: true
+    instance-id: ${spring.cloud.client.hostname}:${spring.application.name}:${server.port}

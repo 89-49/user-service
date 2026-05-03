@@ -30,8 +30,9 @@ public enum UserErrorCode implements ErrorCode {
     REISSUE_REFRESH_TOKEN_REQUIRED("[user.validation.reissue.refresh-token-required]", "refreshToken"),
 
     // 서비스 예외
-    ADMIN_ACCESS_DENIED("[user.exception.access-denied.read-user-info]", "role"),
+    ADMIN_ACCESS_DENIED("[user.exception.access-denied.read-user-info]", "userRole"),
     UNAUTHORIZED_ROLE_ASSIGNMENT("[user.exception.access-denied.manager-assignment]", "userRole"),
+    UNAUTHORIZED_USER_UPDATE("[user.exception.access-denied.user-update]", "userRole"),
     USER_NOT_FOUND("[user.exception.not-found.user]", "userId"),
     DUPLICATE_USER("[user.exception.conflict.duplicate-user]", "username"),
     USER_ROLE_NOT_FOUND("[user.exception.not-found.user-role]", "userRole"),
