@@ -89,6 +89,7 @@ jwt:
 
 eureka:
   instance:
+    prefer-ip-address: true
     instance-id: ${spring.cloud.client.hostname}:${spring.application.name}:${server.port}
 ```
 </details>
