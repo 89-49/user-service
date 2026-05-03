@@ -64,12 +64,12 @@ public class UserCommandService {
 	}
 
 	@Transactional
-	public User deleteUser(UUID userId) {
-		User targetUser = userRepository.findById(userId)
+	public User deleteUser(UUID targetUserId, UUID actorId) {
+		User targetUser = userRepository.findById(targetUserId)
 				.orElseThrow(() -> new UserServiceException(UserErrorCode.USER_NOT_FOUND));
 
 		targetUser.clearChatTimeRanges();
-		targetUser.delete(userId);
+		targetUser.delete(actorId);
 
 		return targetUser;
 	}

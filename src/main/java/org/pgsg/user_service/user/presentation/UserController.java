@@ -38,8 +38,8 @@ public class UserController {
 	}
 
 	@GetMapping("/me")
-	public UserDetailResponse getUser(@AuthenticationPrincipal UserDetailsImpl userDetails) {
-		UserDetailInfo userDetailInfo = userQueryFacade.getUserWithAuthCheck(userDetails.getUuid());
+	public UserDetailResponse getMyProfile(@RequestHeader("X-User-Id") UUID currentUserId) {
+		UserDetailInfo userDetailInfo = userQueryFacade.getUserWithAuthCheck(currentUserId);
 
 		return UserDetailResponse.from(userDetailInfo);
 	}
@@ -55,10 +55,10 @@ public class UserController {
 
 	@PatchMapping("/me")
 	public UserUpdateResponse updateMyProfile(
-			@AuthenticationPrincipal UserDetailsImpl userDetails,
+			@RequestHeader("X-User-Id") UUID currentUserId,
 			@Valid @RequestBody UserSelfUpdateRequest updateRequest) {
 		UserUpdateResult updateResult = userCommandFacade
-				.updateMyProfile(updateRequest.toCommand(userDetails.getUuid()));
+				.updateMyProfile(updateRequest.toCommand(currentUserId));
 
 		return UserUpdateResponse.from(updateResult);
 	}
@@ -74,8 +74,10 @@ public class UserController {
 	}
 
 	@DeleteMapping("/{userId}")
-	public UserDeleteResponse deleteUser(@PathVariable UUID userId) {
-		UserDeleteResult deleteResult = userCommandFacade.deleteUser(userId);
+	public UserDeleteResponse deleteUser(
+			@RequestHeader("X-User-Id") UUID currentUserId,
+			@PathVariable("userId") UUID userId) {
+		UserDeleteResult deleteResult = userCommandFacade.deleteUser(userId, currentUserId);
 
 		return UserDeleteResponse.from(deleteResult);
 	}

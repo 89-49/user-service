@@ -92,11 +92,9 @@ public class User extends BaseEntity {
 		}
 	}
 
-	public void delete(UUID userId) {
-		if (this.userId != userId) {
-			throw new UserServiceException(UserErrorCode.UNAUTHORIZED);
-		}
-		super.delete(userId);
+	public void delete(UUID actorId) {
+		// 이미 엔티티 외부에서 삭제 권한에 관한 검증이 완료되었다고 가정
+		super.delete(actorId);
 	}
 
 	public boolean isEnabled() {

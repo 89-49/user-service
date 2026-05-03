@@ -73,8 +73,8 @@ public class UserCommandFacade {
 		return UserUpdateResult.from(updatedUser);
 	}
 
-	public UserDeleteResult deleteUser(UUID userId) {
-		if (!roleCheck.hasRole(List.of(UserRole.MANAGER, UserRole.MASTER)) && !roleCheck.checkUserSelf(userId)) {
+	public UserDeleteResult deleteUser(UUID targetUserId, UUID actorId) {
+		if (!roleCheck.hasRole(List.of(UserRole.MANAGER, UserRole.MASTER)) && !roleCheck.checkUserSelf(targetUserId)) {
 			throw new UserServiceException(UserErrorCode.UNAUTHORIZED);
 		}
 
@@ -82,7 +82,7 @@ public class UserCommandFacade {
 
 		// TODO: 상품 목록 조회 시, 현재 예약이나 거래 진행 중인 상품이 있는지 검증하는 로직 추가
 
-		User user = userCommandService.deleteUser(userId);
+		User user = userCommandService.deleteUser(targetUserId, actorId);
 
 		return UserDeleteResult.from(user);
 	}
