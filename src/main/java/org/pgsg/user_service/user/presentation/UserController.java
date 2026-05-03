@@ -65,7 +65,7 @@ public class UserController {
 
 	@PatchMapping("/{userId}")
 	public UserUpdateResponse updateUserByAdmin(
-			@PathVariable UUID userId,
+			@PathVariable("userId") UUID userId,
 			@Valid @RequestBody UserAdminUpdateRequest updateRequest) {
 		UserUpdateResult updateResult
 				= userCommandFacade.updateUserByAdmin(updateRequest.toCommand(userId));
