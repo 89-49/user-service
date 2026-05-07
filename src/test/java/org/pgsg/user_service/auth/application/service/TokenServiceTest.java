@@ -65,7 +65,7 @@ class TokenServiceTest {
         // then
         assertThat(result.accessToken()).isEqualTo(accessToken);
         assertThat(result.refreshToken()).isEqualTo(refreshToken);
-        then(tokenRepository).should().saveRefreshToken(eq(userId), eq(refreshToken), any(Duration.class));
+        then(tokenRepository).should().saveRefreshToken(eq(userId), eq(refreshToken), eq(Duration.ofMillis(3600000L)));
     }
 
     @Test

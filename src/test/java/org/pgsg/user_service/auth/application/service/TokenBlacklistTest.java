@@ -92,7 +92,7 @@ class TokenBlacklistTest {
         given(tokenProvider.getSubjectFromExpiredAccessToken(anyString())).willThrow(new RuntimeException("Parsing Error"));
 
         // when
-        boolean result = tokenService.isBlacklisted(accessToken);
+        boolean result = tokenService.isBlacklisted("Bearer " + accessToken);
 
         // then
         assertThat(result).isTrue();
