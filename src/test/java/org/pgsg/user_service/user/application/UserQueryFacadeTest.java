@@ -6,6 +6,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.pgsg.user_service.user.application.dto.info.LoginUserDetailInfo;
 import org.pgsg.user_service.user.application.dto.info.UserDetailInfo;
 import org.pgsg.user_service.user.application.dto.query.SearchUserQuery;
 import org.pgsg.user_service.user.application.dto.result.UserSearchResult;
@@ -13,11 +14,9 @@ import org.pgsg.user_service.user.domain.exception.UserServiceException;
 import org.pgsg.user_service.user.domain.model.User;
 import org.pgsg.user_service.user.domain.model.UserRole;
 import org.pgsg.user_service.user.domain.service.RoleCheck;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.*;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 
@@ -149,5 +148,75 @@ class UserQueryFacadeTest {
         assertThat(result.getTotalElements()).isEqualTo(6);
         assertThat(result.getContent().get(0).userRole()).isEqualTo(UserRole.MASTER);
         verify(userQueryService).getUserList(query, pageable);
+    }
+
+    @Test
+    @DisplayName("getUserList()는 검색 조건에 맞는 사용자가 없으면 빈 페이지를 반환해야 한다")
+    void getUserList_returnsEmptyPageWhenNoMatches() {
+        // given
+        SearchUserQuery query = new SearchUserQuery("nonexistent", null, null, null, null);
+        Pageable pageable = PageRequest.of(0, 10);
+        Page<User> emptyPage = new PageImpl<>(Collections.emptyList(), pageable, 0);
+
+        given(roleCheck.hasRole(List.of(UserRole.MANAGER, UserRole.MASTER))).willReturn(true);
+        given(userQueryService.getUserList(query, pageable)).willReturn(emptyPage);
+
+        // when
+        Page<UserSearchResult> result = userQueryFacade.getUserList(query, pageable);
+
+        // then
+        assertThat(result.getContent()).isEmpty();
+        assertThat(result.getTotalElements()).isEqualTo(0);
+        verify(userQueryService).getUserList(query, pageable);
+    }
+
+    @Test
+    @DisplayName("getUser()는 사용자 정보를 반환해야 한다")
+    void getUser_returnsUserDetailInfo() {
+        // given
+        UUID userId = UUID.randomUUID();
+        User user = User.create("testuser", "pw", UserRole.USER, "이름", "닉");
+        given(userQueryService.getUser(userId)).willReturn(user);
+
+        // when
+        UserDetailInfo result = userQueryFacade.getUser(userId);
+
+        // then
+        assertThat(result.username()).isEqualTo("testuser");
+        verify(userQueryService).getUser(userId);
+    }
+
+    @Test
+    @DisplayName("getUserForAuth(UUID)는 인증용 사용자 정보를 반환해야 한다")
+    void getUserForAuth_byId_returnsLoginUserDetailInfo() {
+        // given
+        UUID userId = UUID.randomUUID();
+        User user = User.create("testuser", "pw", UserRole.USER, "이름", "닉");
+        given(userQueryService.getUser(userId)).willReturn(user);
+
+        // when
+        LoginUserDetailInfo result = userQueryFacade.getUserForAuth(userId);
+
+        // then
+        assertThat(result.username()).isEqualTo("testuser");
+        assertThat(result.password()).isEqualTo("pw");
+        verify(userQueryService).getUser(userId);
+    }
+
+    @Test
+    @DisplayName("getUserForAuth(String)는 인증용 사용자 정보를 반환해야 한다")
+    void getUserForAuth_byUsername_returnsLoginUserDetailInfo() {
+        // given
+        String username = "testuser";
+        User user = User.create(username, "pw", UserRole.USER, "이름", "닉");
+        given(userQueryService.getUserForAuth(username)).willReturn(user);
+
+        // when
+        LoginUserDetailInfo result = userQueryFacade.getUserForAuth(username);
+
+        // then
+        assertThat(result.username()).isEqualTo(username);
+        assertThat(result.password()).isEqualTo("pw");
+        verify(userQueryService).getUserForAuth(username);
     }
 }

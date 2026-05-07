@@ -14,6 +14,8 @@ import org.pgsg.user_service.user.domain.exception.UserServiceException;
 import org.pgsg.user_service.user.domain.model.User;
 import org.pgsg.user_service.user.domain.model.UserRole;
 import org.pgsg.user_service.user.domain.repository.UserRepository;
+import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.dao.DuplicateKeyException;
 
 import java.util.Collections;
 import java.util.Optional;
@@ -61,6 +63,34 @@ class UserCommandServiceTest {
         assertThatThrownBy(() -> userCommandService.createUser(command))
                 .isInstanceOf(UserServiceException.class)
                 .hasFieldOrPropertyWithValue("errorCode", UserErrorCode.DUPLICATE_USER);
+    }
+
+    @Test
+    @DisplayName("createUser()는 저장 중 DuplicateKeyException이 발생하면 DUPLICATE_USER 예외를 던져야 한다")
+    void createUser_throwsExceptionWhenDuplicateKeyExceptionOccurs() {
+        // given
+        CreateUserCommand command = new CreateUserCommand("testuser", "password", UserRole.USER, "홍길동", "길동이", Collections.emptyList());
+        given(userRepository.existsByUsername(command.username())).willReturn(false);
+        given(userRepository.save(any(User.class))).willThrow(new DuplicateKeyException("duplicate"));
+
+        // when & then
+        assertThatThrownBy(() -> userCommandService.createUser(command))
+                .isInstanceOf(UserServiceException.class)
+                .hasFieldOrPropertyWithValue("errorCode", UserErrorCode.DUPLICATE_USER);
+    }
+
+    @Test
+    @DisplayName("createUser()는 저장 중 DataIntegrityViolationException이 발생하면 SAVE_FAILURE 예외를 던져야 한다")
+    void createUser_throwsExceptionWhenDataIntegrityViolationExceptionOccurs() {
+        // given
+        CreateUserCommand command = new CreateUserCommand("testuser", "password", UserRole.USER, "홍길동", "길동이", Collections.emptyList());
+        given(userRepository.existsByUsername(command.username())).willReturn(false);
+        given(userRepository.save(any(User.class))).willThrow(new DataIntegrityViolationException("integrity violation"));
+
+        // when & then
+        assertThatThrownBy(() -> userCommandService.createUser(command))
+                .isInstanceOf(UserServiceException.class)
+                .hasFieldOrPropertyWithValue("errorCode", UserErrorCode.SAVE_FAILURE);
     }
 
     @Test
