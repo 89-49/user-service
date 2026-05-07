@@ -24,6 +24,7 @@ public enum UserErrorCode implements ErrorCode {
     CHAT_TIME_DAY_OF_WEEK_REQUIRED("[user.validation.user-info-chat-time.day-of-week-required]", "dayOfWeek"),
     CHAT_TIME_START_TIME_REQUIRED("[user.validation.user-info-chat-time.start-time-required]", "startTime"),
     CHAT_TIME_END_TIME_REQUIRED("[user.validation.user-info-chat-time.end-time-required]", "endTime"),
+    INVALID_CHAT_TIME_RANGE("[user.validation.user-info-chat-time.invalid-range]", "chatTimeRanges"),
 
     // 토큰 재발급 유효성
     REISSUE_ACCESS_TOKEN_REQUIRED("[user.validation.reissue.access-token-required]", "accessToken"),

@@ -1,12 +1,13 @@
 package org.pgsg.user_service.user.domain.model;
 
-
 import jakarta.persistence.Column;
 import jakarta.persistence.Embeddable;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.pgsg.user_service.user.domain.exception.UserErrorCode;
+import org.pgsg.user_service.user.domain.exception.UserServiceException;
 
 import java.time.DayOfWeek;
 import java.time.LocalTime;
@@ -33,11 +34,17 @@ public class ChatTimeRange {
 	}
 
 	private static void validateChatTime(DayOfWeek dayOfWeek, LocalTime startTime, LocalTime endTime) {
-		if (dayOfWeek == null || startTime == null || endTime == null) {
-			throw new IllegalArgumentException("요일/시작 시간/종료 시간은 필수입니다.");
+		if (dayOfWeek == null) {
+			throw new UserServiceException(UserErrorCode.CHAT_TIME_DAY_OF_WEEK_REQUIRED);
+		}
+		if (startTime == null) {
+			throw new UserServiceException(UserErrorCode.CHAT_TIME_START_TIME_REQUIRED);
+		}
+		if (endTime == null) {
+			throw new UserServiceException(UserErrorCode.CHAT_TIME_END_TIME_REQUIRED);
 		}
 		if (!startTime.isBefore(endTime)) {
-			throw new IllegalArgumentException("시작 시간은 종료 시간보다 빨라야 합니다.");
+			throw new UserServiceException(UserErrorCode.INVALID_CHAT_TIME_RANGE);
 		}
 	}
 }
