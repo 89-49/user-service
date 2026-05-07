@@ -184,4 +184,44 @@ class JwtAuthenticationFilterTest {
         // 2. 토큰이 없으므로 검증 로직을 호출하지 않아야 함
         verify(tokenProvider, never()).validateToken(anyString());
     }
+
+    @Test
+    @DisplayName("성공: 일부 Claim이 null인 경우 해당 헤더는 생성되지 않는다")
+    void doFilterInternal_NullClaims_OmitHeaders() throws Exception {
+        // given
+        MockHttpServletRequest request = new MockHttpServletRequest();
+        request.addHeader(HttpHeaders.AUTHORIZATION, "Bearer " + accessToken);
+        MockHttpServletResponse response = new MockHttpServletResponse();
+
+        when(tokenProvider.validateToken(accessToken)).thenReturn(true);
+        doNothing().when(userAuthenticator).checkBlacklist(accessToken);
+
+        // Name, Nickname, Enabled를 null로 설정
+        Claims claims = Jwts.claims()
+                .subject(userId.toString())
+                .add(JwtUtils.CLAIM_TOKEN_TYPE, "access")
+                .add(JwtUtils.CLAIM_USERNAME, "testuser")
+                .add(JwtUtils.CLAIM_USER_ROLE, "ROLE_USER")
+                .add(JwtUtils.CLAIM_NAME, null)
+                .add(JwtUtils.CLAIM_NICKNAME, null)
+                .add(JwtUtils.CLAIM_ENABLED, null)
+                .build();
+
+        when(tokenProvider.parseClaims(accessToken)).thenReturn(claims);
+
+        // when
+        jwtAuthenticationFilter.doFilterInternal(request, response, filterChain);
+
+        // then
+        ArgumentCaptor<HttpServletRequest> requestCaptor = ArgumentCaptor.forClass(HttpServletRequest.class);
+        verify(filterChain).doFilter(requestCaptor.capture(), eq(response));
+
+        HttpServletRequest wrappedRequest = requestCaptor.getValue();
+        assertThat(wrappedRequest.getHeader(JwtUtils.HEADER_USER_ID)).isEqualTo(userId.toString());
+        
+        // null인 Claim들에 대해서는 헤더가 존재하지 않아야 함 (null 반환)
+        assertThat(wrappedRequest.getHeader(JwtUtils.HEADER_USER_NAME)).isNull();
+        assertThat(wrappedRequest.getHeader(JwtUtils.HEADER_USER_NICKNAME)).isNull();
+        assertThat(wrappedRequest.getHeader(JwtUtils.HEADER_ENABLED)).isNull();
+    }
 }
