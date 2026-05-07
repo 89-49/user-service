@@ -22,11 +22,37 @@ class HttpRequestHeaderWrapperTest {
 
         // 1. 정상적인 인증 요청 상황 시뮬레이션
         mockRequest.addHeader(HttpHeaders.AUTHORIZATION, "Bearer valid-access-token");
+        mockRequest.addHeader("X-Normal-Header", "normal-value");
         
-        // 2. 사칭 공격 시도 시뮬레이션 (클라이언트가 직접 보낸 X-User-* 헤더)
+        // 2. 사칭 공격 시도 시뮬레이션 (클라이언트가 직접 보낸 X-User-* 헤더들)
         mockRequest.addHeader(JwtUtils.HEADER_USER_ID, "malicious-user-id");
+        mockRequest.addHeader(JwtUtils.HEADER_USERNAME, "malicious-username");
 
         wrapper = new HttpRequestHeaderWrapper(mockRequest);
+    }
+
+    @Test
+    @DisplayName("getHeaderNames - 인증 헤더와 추가된 헤더만 포함하고, 사칭 시도된 원본 헤더는 모두 제외한다")
+    void getHeaderNames_Scenarios() {
+        // given: 필터에서 일부 정보만 추가한 상황
+        String realUserId = "real-user-123";
+        wrapper.addHeader(JwtUtils.HEADER_USER_ID, realUserId);
+
+        // when
+        List<String> names = Collections.list(wrapper.getHeaderNames());
+
+        // then
+        // 1. 원본 일반 헤더들은 포함되어야 함
+        assertThat(names).contains(HttpHeaders.AUTHORIZATION.toLowerCase(), "x-normal-header");
+        
+        // 2. 인증 후 추가된 헤더는 포함되어야 함
+        assertThat(names).contains(JwtUtils.HEADER_USER_ID.toLowerCase());
+
+        // 3. 원본에 있었으나 추가되지 않은 사칭 헤더(X-User-Username)는 제외되어야 함
+        assertThat(names).doesNotContain(JwtUtils.HEADER_USERNAME.toLowerCase());
+
+        // 4. 모든 헤더명은 소문자로 정규화되어 있어야 함 (Wrapper 구현 사양)
+        assertThat(names).allMatch(name -> name.equals(name.toLowerCase()));
     }
 
     @Test
@@ -56,16 +82,27 @@ class HttpRequestHeaderWrapperTest {
     }
 
     @Test
-    @DisplayName("getHeaderNames - 인증 헤더와 추가된 헤더만 포함하고, 사칭 시도된 원본 헤더는 제외한다")
-    void getHeaderNames_FiltersForbiddenAndIncludesAdded() {
+    @DisplayName("getHeaders - 추가된 헤더, 일반 원본 헤더, 금지된 원본 헤더에 대해 올바른 목록을 반환한다")
+    void getHeaders_Scenarios() {
         // given
-        wrapper.addHeader(JwtUtils.HEADER_USER_ID, "real-user-123");
+        String realUserId = "real-user-123";
+        wrapper.addHeader(JwtUtils.HEADER_USER_ID, realUserId);
 
-        // when
-        List<String> names = Collections.list(wrapper.getHeaderNames());
+        // when & then 1: 추가된 헤더 조회 (대소문자 구분 없음)
+        List<String> addedHeaders = Collections.list(wrapper.getHeaders(JwtUtils.HEADER_USER_ID));
+        assertThat(addedHeaders).containsExactly(realUserId);
+        
+        List<String> addedHeadersLower = Collections.list(wrapper.getHeaders(JwtUtils.HEADER_USER_ID.toLowerCase()));
+        assertThat(addedHeadersLower).containsExactly(realUserId);
 
-        // then
-        assertThat(names).contains(HttpHeaders.AUTHORIZATION.toLowerCase(), JwtUtils.HEADER_USER_ID.toLowerCase());
-        // getHeaderNames 결과에는 소문자로 변환된 헤더명들이 포함됨
+        // when & then 2: 일반 원본 헤더 조회
+        List<String> normalHeaders = Collections.list(wrapper.getHeaders(HttpHeaders.AUTHORIZATION));
+        assertThat(normalHeaders).containsExactly("Bearer valid-access-token");
+
+        // when & then 3: 금지된 원본 헤더(사칭 시도) 조회 -> 빈 목록이어야 함
+        // 참고: 이미 위에서 JwtUtils.HEADER_USER_ID를 addHeader 했으므로, 
+        // 사칭 시도 헤더를 테스트하기 위해 다른 금지된 헤더명을 사용
+        List<String> forbiddenHeaders = Collections.list(wrapper.getHeaders(JwtUtils.HEADER_USERNAME));
+        assertThat(forbiddenHeaders).isEmpty();
     }
 }
