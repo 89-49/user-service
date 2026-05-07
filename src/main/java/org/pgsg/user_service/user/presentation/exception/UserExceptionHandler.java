@@ -1,4 +1,4 @@
-package org.pgsg.user_service.user.domain.exception;
+package org.pgsg.user_service.user.presentation.exception;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -6,6 +6,8 @@ import org.pgsg.common.exception.CustomException;
 import org.pgsg.common.exception.ErrorConfigProperties;
 import org.pgsg.common.exception.GlobalExceptionAdvice;
 import org.pgsg.common.response.ErrorResponse;
+import org.pgsg.user_service.user.domain.exception.UserErrorCode;
+import org.pgsg.user_service.user.domain.exception.UserServiceException;
 import org.slf4j.MDC;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
