@@ -30,16 +30,15 @@ public class UserExceptionHandler implements GlobalExceptionAdvice {
 			String globalErrorKey = e.getBindingResult().getGlobalError() != null
 					? e.getBindingResult().getGlobalError().getDefaultMessage() : null;
 
-			return buildResponse(globalErrorKey, null, e);
+			return buildResponse(globalErrorKey, null, e, HttpStatus.BAD_REQUEST);
 		}
 		String errorKey = fieldError.getDefaultMessage();
-
 		UserErrorCode errorCode = UserErrorCode.fromErrorKey(errorKey);
 		if (errorCode != null) {
-			return buildResponse(errorCode.getErrorKey(), errorCode.getField(), e);
+			return buildResponse(errorCode.getErrorKey(), errorCode.getField(), e, HttpStatus.BAD_REQUEST);
 		}
 
-		return buildResponse(errorKey, fieldError.getField(), e);
+		return buildResponse(errorKey, fieldError.getField(), e, HttpStatus.BAD_REQUEST);
 	}
 
 	@ExceptionHandler(UserServiceException.class)
@@ -55,6 +54,10 @@ public class UserExceptionHandler implements GlobalExceptionAdvice {
 	 * 공통 에러 응답 빌더
 	 */
 	private ResponseEntity<ErrorResponse> buildResponse(String errorKey, String field, Exception e) {
+		return buildResponse(errorKey, field, e, HttpStatus.INTERNAL_SERVER_ERROR);
+	}
+
+	private ResponseEntity<ErrorResponse> buildResponse(String errorKey, String field, Exception e, HttpStatus defaultStatus) {
 		// [key] 형식에서 [] 제거
 		String normalizedKey = (errorKey != null && errorKey.startsWith("[") && errorKey.endsWith("]"))
 				? errorKey.substring(1, errorKey.length() - 1)
@@ -67,8 +70,8 @@ public class UserExceptionHandler implements GlobalExceptionAdvice {
 					MDC.get("traceId"), field, errorKey, normalizedKey, e);
 
 			return ResponseEntity
-					.status(HttpStatus.INTERNAL_SERVER_ERROR)
-					.body(ErrorResponse.of(HttpStatus.INTERNAL_SERVER_ERROR, "SYSTEM-500", field, "정의되지 않은 서버 에러가 발생했습니다."));
+					.status(defaultStatus)
+					.body(ErrorResponse.of(defaultStatus, "SYSTEM-" + defaultStatus.value(), field, "정의되지 않은 에러가 발생했습니다."));
 		}
 
 		log.error("[TraceID: {}] Exception: field={}, code={}, message={}",

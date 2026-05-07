@@ -13,6 +13,8 @@ import org.springframework.validation.BindingResult;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 
+import java.util.Objects;
+
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -31,7 +33,7 @@ class UserExceptionHandlerTest {
         ResponseEntity<ErrorResponse> response = userExceptionHandler.handleUserException(exception);
 
         assertThat(response.getStatusCode().value()).isEqualTo(404);
-        assertThat(response.getBody().code()).isEqualTo("U017");
+        assertThat(Objects.requireNonNull(response.getBody()).code()).isEqualTo("U017");
         assertThat(response.getBody().message().toString()).contains("해당 회원을 찾을 수 없습니다");
     }
 
@@ -45,7 +47,7 @@ class UserExceptionHandlerTest {
         ResponseEntity<ErrorResponse> response = userExceptionHandler.handleUserException(exception);
 
         assertThat(response.getStatusCode().value()).isEqualTo(500);
-        assertThat(response.getBody().code()).isEqualTo("SYSTEM-500");
+        assertThat(Objects.requireNonNull(response.getBody()).code()).isEqualTo("SYSTEM-500");
     }
 
     @Test
@@ -61,12 +63,12 @@ class UserExceptionHandlerTest {
         ResponseEntity<ErrorResponse> response = userExceptionHandler.handleValidationException(ex);
 
         assertThat(response.getStatusCode().value()).isEqualTo(400);
-        assertThat(response.getBody().code()).isEqualTo("U001");
+        assertThat(Objects.requireNonNull(response.getBody()).code()).isEqualTo("U001");
         assertThat(response.getBody().field()).isEqualTo("username");
     }
 
     @Test
-    @DisplayName("MethodArgumentNotValidException - 일반 필드 에러 발생 시 기본 메시지를 반환해야 한다")
+    @DisplayName("MethodArgumentNotValidException - 미매핑 필드 에러도 400 응답을 반환해야 한다")
     void handleValidationException_GeneralFieldError() {
         MethodArgumentNotValidException ex = mock(MethodArgumentNotValidException.class);
         BindingResult bindingResult = mock(BindingResult.class);
@@ -77,7 +79,6 @@ class UserExceptionHandlerTest {
 
         ResponseEntity<ErrorResponse> response = userExceptionHandler.handleValidationException(ex);
 
-        // 정의되지 않은 키이므로 500 fallback (buildResponse 로직상)
-        assertThat(response.getStatusCode().value()).isEqualTo(500);
+        assertThat(response.getStatusCode().value()).isEqualTo(400);
     }
 }
