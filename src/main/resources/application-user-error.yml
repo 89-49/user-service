@@ -124,3 +124,8 @@ error:
       code: "U024"
       message: "회원정보를 수정할 권한이 없습니다."
       status: 403
+
+    "[user.validation.user-info-chat-time.invalid-range]":
+      code: "U025"
+      message: "시작 시간은 종료 시간보다 빨라야 합니다."
+      status: 400
