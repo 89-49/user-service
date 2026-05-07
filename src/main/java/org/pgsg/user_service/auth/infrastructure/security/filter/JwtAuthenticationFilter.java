@@ -20,9 +20,9 @@ import org.springframework.web.filter.OncePerRequestFilter;
 import java.io.IOException;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
+import java.util.Optional;
 
 // TODO: 내부 로직은 gateway-server의 filter 패키지에서 활용(spring cloud gateway 사용 시, webflux로 전환 필요)
-// TODO: gateway-server JWT 인증 필터 분리 완료 이후 deprecated 처리
 @Slf4j
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
@@ -91,16 +91,17 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 		requestWrapper.addHeader(JwtUtils.HEADER_USER_NICKNAME, encodeValue(claims.get(JwtUtils.CLAIM_NICKNAME, String.class)));
 
 		// Enabled 여부는 boolean값을 string 타입으로 변환한 값을 저장
-		Boolean enabled = claims.get(JwtUtils.CLAIM_ENABLED, Boolean.class);
-		requestWrapper.addHeader(JwtUtils.HEADER_ENABLED, enabled != null ? enabled.toString() : "false");
+		String enabled = Optional.ofNullable(claims.get(JwtUtils.CLAIM_ENABLED, Boolean.class))
+				.map(Object::toString)
+				.orElse("false");
+		requestWrapper.addHeader(JwtUtils.HEADER_ENABLED, enabled);
 
 		return requestWrapper;
 	}
 
 	private String encodeValue(String value) {
-		if (value == null) {
-			return "";
-		}
-		return URLEncoder.encode(value, StandardCharsets.UTF_8);
+		return Optional.ofNullable(value)
+				.map(val -> URLEncoder.encode(val, StandardCharsets.UTF_8))
+				.orElse("");
 	}
 }
