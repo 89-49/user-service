@@ -31,6 +31,11 @@ spring:
     hibernate:
       ddl-auto: create-drop
 
+# 테스트 환경에서는 eureka 서버와의 연동 없이 테스트 진행
+eureka:
+  client:
+    enabled: false
+
 jwt:
   secret: ${JWT_SECRET:test-jwt-secret-for-local-ci-only-32bytes-min}
   access-token-expiration: ${JWT_ACCESS_EXPIRATION:3600000}
