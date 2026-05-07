@@ -6,8 +6,7 @@ import jakarta.servlet.http.HttpServletRequestWrapper;
 import java.util.*;
 import java.util.stream.Collectors;
 
-// TODO: 게이트웨이로 JWT 인증 필터 분리 완료 시 deprecated 처리
-// 게이트웨이의 JWT 인증 필터를 추가하기 전까지만 임시 사용할 Wrapper
+// 게이트웨이의 JWT 인증 필터를 추가하기 전까지 임시 사용할 Wrapper
 public class HttpRequestHeaderWrapper extends HttpServletRequestWrapper {
 
 	// Authorization 헤더 없이 서버가 인증을 마쳤다는 증표로 사용되는 내부 헤더 적용 -> 서버 권한 사칭 시도로 해석
@@ -47,7 +46,6 @@ public class HttpRequestHeaderWrapper extends HttpServletRequestWrapper {
 			return Collections.enumeration(Collections.singletonList(value));
 		}
 		if (lowerName.startsWith(FORBIDDEN_HEADER_PREFIX)) {
-			//
 			return Collections.emptyEnumeration();
 		}
 		// 원본 요청의 헤더명에 관한 목록 단위 값을 반환
