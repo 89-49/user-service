@@ -27,7 +27,9 @@ class UserOrderSpecifierTest {
         OrderSpecifier<?>[] specifiers = UserQueryCondition.getOrderSpecifier(sort);
 
         assertThat(specifiers).hasSize(2);
+        assertThat(specifiers[0].getTarget().toString()).isEqualTo("user.username");
         assertThat(specifiers[0].getOrder()).isEqualTo(Order.ASC);
+        assertThat(specifiers[1].getTarget().toString()).isEqualTo("user.name");
         assertThat(specifiers[1].getOrder()).isEqualTo(Order.DESC);
     }
 

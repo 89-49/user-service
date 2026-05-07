@@ -7,6 +7,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.pgsg.user_service.user.application.dto.query.SearchUserQuery;
+import org.pgsg.user_service.user.domain.exception.UserErrorCode;
 import org.pgsg.user_service.user.domain.exception.UserServiceException;
 import org.pgsg.user_service.user.domain.model.User;
 import org.pgsg.user_service.user.domain.model.UserRole;
@@ -58,7 +59,8 @@ class UserQueryServiceTest {
 
         // when & then
         assertThatThrownBy(() -> userQueryService.getUser(userId))
-                .isInstanceOf(UserServiceException.class);
+                .isInstanceOf(UserServiceException.class)
+                .hasFieldOrPropertyWithValue("errorCode", UserErrorCode.USER_NOT_FOUND);
     }
 
     @Test
