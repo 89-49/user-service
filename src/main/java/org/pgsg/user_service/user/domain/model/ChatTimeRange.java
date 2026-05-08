@@ -36,6 +36,13 @@ public class ChatTimeRange {
 		return new ChatTimeRange(dayOfWeek, startTime, endTime);
 	}
 
+	public boolean overlapsWith(ChatTimeRange other) {
+		if (this.dayOfWeek != other.dayOfWeek) {
+			return false;
+		}
+		return this.startTime.isBefore(other.endTime) && other.startTime.isBefore(this.endTime);
+	}
+
 	private static void validateChatTime(DayOfWeek dayOfWeek, LocalTime startTime, LocalTime endTime) {
 		if (dayOfWeek == null) {
 			throw new UserServiceException(UserErrorCode.CHAT_TIME_DAY_OF_WEEK_REQUIRED);

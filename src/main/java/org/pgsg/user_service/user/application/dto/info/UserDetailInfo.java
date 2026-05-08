@@ -15,7 +15,7 @@ public record UserDetailInfo(
 		UserRole userRole,
 		String name,
 		String nickname,
-		List<ChatTimeRangeInfo> chatTimeRange,
+		List<ChatTimeRangeInfo> chatTimeRanges,
 
 		LocalDateTime createdAt,
 		UUID createdBy,

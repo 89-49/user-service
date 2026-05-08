@@ -26,6 +26,9 @@ public enum UserErrorCode implements ErrorCode {
     CHAT_TIME_END_TIME_REQUIRED("[user.validation.user-info-chat-time.end-time-required]", "endTime"),
     INVALID_CHAT_TIME_RANGE("[user.validation.user-info-chat-time.invalid-range]", "chatTimeRanges"),
 
+    CHAT_DATE_REQUIRED("[user.validation.chat-availability.chat-date-required]", "chatDate"),
+    CHAT_TIME_REQUIRED("[user.validation.chat-availability.chat-time-required]", "chatTime"),
+
     // 토큰 재발급 유효성
     REISSUE_ACCESS_TOKEN_REQUIRED("[user.validation.reissue.access-token-required]", "accessToken"),
     REISSUE_REFRESH_TOKEN_REQUIRED("[user.validation.reissue.refresh-token-required]", "refreshToken"),
@@ -35,7 +38,8 @@ public enum UserErrorCode implements ErrorCode {
     UNAUTHORIZED_ROLE_ASSIGNMENT("[user.exception.access-denied.manager-assignment]", "userRole"),
     UNAUTHORIZED_USER_UPDATE("[user.exception.access-denied.user-update]", "userRole"),
     USER_NOT_FOUND("[user.exception.not-found.user]", "userId"),
-    DUPLICATE_USER("[user.exception.conflict.duplicate-user]", "username"),
+    DUPLICATE_USER("[user.exception.conflict.duplicate-user]", "uk_user_username"),
+    DUPLICATE_CHAT_TIME_RANGE("[user.exception.conflict.duplicate-chat-time]", "uk_chat_time_range"),
     USER_ROLE_NOT_FOUND("[user.exception.not-found.user-role]", "userRole"),
     UNAUTHORIZED("[user.exception.unauthorized.invalid-user]", "authentication"),
     SAVE_FAILURE("[user.exception.internal-error.save-user-failure]", "user")

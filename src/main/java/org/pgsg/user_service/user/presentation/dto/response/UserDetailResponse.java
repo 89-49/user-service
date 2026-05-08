@@ -14,7 +14,7 @@ public record UserDetailResponse(
 		String name,
 		String nickname,
 		UserRole userRole,
-		List<ChatTimeRangeInfo> chatTimeRange,
+		List<ChatTimeRangeInfo> chatTimeRanges,
 		LocalDateTime createdAt,
 		UUID createdBy,
 		LocalDateTime modifiedAt,
@@ -29,7 +29,7 @@ public record UserDetailResponse(
 				userDetailInfo.name(),
 				userDetailInfo.nickname(),
 				userDetailInfo.userRole(),
-				userDetailInfo.chatTimeRange(),
+				userDetailInfo.chatTimeRanges(),
 
 				userDetailInfo.createdAt(),
 				userDetailInfo.createdBy(),

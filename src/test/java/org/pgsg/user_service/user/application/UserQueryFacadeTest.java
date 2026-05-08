@@ -6,16 +6,22 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.pgsg.user_service.user.application.dto.info.ChatTimeRangeInfo;
 import org.pgsg.user_service.user.application.dto.info.LoginUserDetailInfo;
 import org.pgsg.user_service.user.application.dto.info.UserDetailInfo;
+import org.pgsg.user_service.user.application.dto.query.SearchChatTimeQuery;
 import org.pgsg.user_service.user.application.dto.query.SearchUserQuery;
 import org.pgsg.user_service.user.application.dto.result.UserSearchResult;
 import org.pgsg.user_service.user.domain.exception.UserServiceException;
+import org.pgsg.user_service.user.domain.model.ChatTimeRange;
 import org.pgsg.user_service.user.domain.model.User;
 import org.pgsg.user_service.user.domain.model.UserRole;
 import org.pgsg.user_service.user.domain.service.RoleCheck;
 import org.springframework.data.domain.*;
 
+import java.time.DayOfWeek;
+import java.time.LocalDate;
+import java.time.LocalTime;
 import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
@@ -218,5 +224,27 @@ class UserQueryFacadeTest {
         assertThat(result.username()).isEqualTo(username);
         assertThat(result.password()).isEqualTo("pw");
         verify(userQueryService).getUserForAuth(username);
+    }
+
+    @Test
+    @DisplayName("getAvailableChatTime()은 채팅 가능 시간대 정보 목록을 반환해야 한다")
+    void getAvailableChatTime_returnsChatTimeRangeInfoList() {
+        // given
+        UUID userId = UUID.randomUUID();
+        LocalDate monday = LocalDate.of(2024, 5, 13);
+        LocalTime time = LocalTime.of(10, 0);
+        SearchChatTimeQuery query = new SearchChatTimeQuery(monday, time);
+
+        ChatTimeRange range = ChatTimeRange.of(DayOfWeek.MONDAY, LocalTime.of(9, 0), LocalTime.of(11, 0));
+        given(userQueryService.getAvailableChatTime(userId, query)).willReturn(List.of(range));
+
+        // when
+        List<ChatTimeRangeInfo> result = userQueryFacade.getAvailableChatTime(userId, query);
+
+        // then
+        assertThat(result).hasSize(1);
+        assertThat(result.get(0).dayOfWeek()).isEqualTo(DayOfWeek.MONDAY);
+        assertThat(result.get(0).startTime()).isEqualTo(LocalTime.of(9, 0));
+        verify(userQueryService).getAvailableChatTime(userId, query);
     }
 }
