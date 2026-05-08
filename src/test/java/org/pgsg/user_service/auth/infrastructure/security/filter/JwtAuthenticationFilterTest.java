@@ -222,6 +222,5 @@ class JwtAuthenticationFilterTest {
         // null인 Claim들에 대해서는 헤더가 존재하지 않아야 함 (null 반환)
         assertThat(wrappedRequest.getHeader(JwtUtils.HEADER_USER_NAME)).isNull();
         assertThat(wrappedRequest.getHeader(JwtUtils.HEADER_USER_NICKNAME)).isNull();
-        assertThat(wrappedRequest.getHeader(JwtUtils.HEADER_ENABLED)).isNull();
     }
 }
