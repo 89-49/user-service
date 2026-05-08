@@ -2,6 +2,8 @@ package org.pgsg.user_service.user.domain.model;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Embeddable;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -18,6 +20,7 @@ import java.time.LocalTime;
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 public class ChatTimeRange {
 
+	@Enumerated(EnumType.STRING)
 	@Column(name = "day_of_week", nullable = false)
 	private DayOfWeek dayOfWeek;
 
