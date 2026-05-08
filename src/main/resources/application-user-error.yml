@@ -129,3 +129,18 @@ error:
       code: "U025"
       message: "시작 시간은 종료 시간보다 빨라야 합니다."
       status: 400
+
+    "[user.exception.conflict.duplicate-chat-time]":
+      code: "U026"
+      message: "이미 등록했던 채팅 가능 시간대입니다."
+      status: 409
+
+    "[user.validation.chat-availability.chat-date-required]":
+      code: "U027"
+      message: "회원의 채팅 가능 여부를 조회할 날짜 정보는 필수입니다."
+      status: 400
+
+    "[user.validation.chat-availability.chat-time-required]":
+      code: "U028"
+      message: "회원의 채팅 가능 여부를 조회할 시간 정보는 필수입니다."
+      status: 400
