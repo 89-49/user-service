@@ -2,12 +2,15 @@ package org.pgsg.user_service.user.application;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.pgsg.user_service.user.application.dto.info.ChatTimeRangeInfo;
 import org.pgsg.user_service.user.application.dto.info.LoginUserDetailInfo;
 import org.pgsg.user_service.user.application.dto.info.UserDetailInfo;
+import org.pgsg.user_service.user.application.dto.query.SearchChatTimeQuery;
 import org.pgsg.user_service.user.application.dto.query.SearchUserQuery;
 import org.pgsg.user_service.user.application.dto.result.UserSearchResult;
 import org.pgsg.user_service.user.domain.exception.UserErrorCode;
 import org.pgsg.user_service.user.domain.exception.UserServiceException;
+import org.pgsg.user_service.user.domain.model.ChatTimeRange;
 import org.pgsg.user_service.user.domain.model.User;
 import org.pgsg.user_service.user.domain.model.UserRole;
 import org.pgsg.user_service.user.domain.service.RoleCheck;
@@ -64,5 +67,13 @@ public class UserQueryFacade {
 		User user = userQueryService.getUserForAuth(username);
 
 		return LoginUserDetailInfo.from(user);
+	}
+
+	public List<ChatTimeRangeInfo> getAvailableChatTime(UUID userId, SearchChatTimeQuery chatTimeQuery) {
+		List<ChatTimeRange> chatTimeRanges = userQueryService.getAvailableChatTime(userId, chatTimeQuery);
+
+		return chatTimeRanges.stream()
+				.map(ChatTimeRangeInfo::from)
+				.toList();
 	}
 }
