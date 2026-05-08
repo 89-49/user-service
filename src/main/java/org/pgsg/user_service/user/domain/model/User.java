@@ -53,7 +53,7 @@ public class User extends BaseEntity {
 			name = "p_chat_time_range",
 			joinColumns = @JoinColumn(name = "user_id"),
 			uniqueConstraints = @UniqueConstraint(
-					name = "idx_chat_time_range",
+					name = "uk_chat_time_range",
 					columnNames = {"user_id", "day_of_week", "start_time"}
 			)
 	)
