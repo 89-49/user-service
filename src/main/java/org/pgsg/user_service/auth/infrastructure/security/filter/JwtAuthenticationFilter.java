@@ -20,9 +20,9 @@ import org.springframework.web.filter.OncePerRequestFilter;
 import java.io.IOException;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
+import java.util.Optional;
 
 // TODO: 내부 로직은 gateway-server의 filter 패키지에서 활용(spring cloud gateway 사용 시, webflux로 전환 필요)
-// TODO: gateway-server JWT 인증 필터 분리 완료 이후 deprecated 처리
 @Slf4j
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
@@ -82,25 +82,31 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 	private HttpServletRequest createWrapperWithHeaders(HttpServletRequest request, Claims claims) {
 		HttpRequestHeaderWrapper requestWrapper = new HttpRequestHeaderWrapper(request);
 
-		requestWrapper.addHeader(JwtUtils.HEADER_USER_ID, claims.getSubject());
-		requestWrapper.addHeader(JwtUtils.HEADER_USERNAME, claims.get(JwtUtils.CLAIM_USERNAME, String.class));
-		requestWrapper.addHeader(JwtUtils.HEADER_ROLES, claims.get(JwtUtils.CLAIM_USER_ROLE, String.class));
+		Optional.ofNullable(claims.getSubject())
+				.ifPresent(id -> requestWrapper.addHeader(JwtUtils.HEADER_USER_ID, id));
+		Optional.ofNullable(claims.get(JwtUtils.CLAIM_USERNAME, String.class))
+				.ifPresent(username -> requestWrapper.addHeader(JwtUtils.HEADER_USERNAME, username));
+		Optional.ofNullable(claims.get(JwtUtils.CLAIM_USER_ROLE, String.class))
+				.ifPresent(roles -> requestWrapper.addHeader(JwtUtils.HEADER_ROLES, roles));
 
 		// 한글 헤더는 URL 인코딩 처리 (LoginFilter에서 디코딩함)
-		requestWrapper.addHeader(JwtUtils.HEADER_USER_NAME, encodeValue(claims.get(JwtUtils.CLAIM_NAME, String.class)));
-		requestWrapper.addHeader(JwtUtils.HEADER_USER_NICKNAME, encodeValue(claims.get(JwtUtils.CLAIM_NICKNAME, String.class)));
+		Optional.ofNullable(claims.get(JwtUtils.CLAIM_NAME, String.class))
+				.map(this::encodeValue)
+				.ifPresent(name -> requestWrapper.addHeader(JwtUtils.HEADER_USER_NAME, name));
+
+		Optional.ofNullable(claims.get(JwtUtils.CLAIM_NICKNAME, String.class))
+				.map(this::encodeValue)
+				.ifPresent(nickname -> requestWrapper.addHeader(JwtUtils.HEADER_USER_NICKNAME, nickname));
 
 		// Enabled 여부는 boolean값을 string 타입으로 변환한 값을 저장
-		Boolean enabled = claims.get(JwtUtils.CLAIM_ENABLED, Boolean.class);
-		requestWrapper.addHeader(JwtUtils.HEADER_ENABLED, enabled != null ? enabled.toString() : "false");
+		Optional.ofNullable(claims.get(JwtUtils.CLAIM_ENABLED, Boolean.class))
+				.map(Object::toString)
+				.ifPresent(enabled -> requestWrapper.addHeader(JwtUtils.HEADER_ENABLED, enabled));
 
 		return requestWrapper;
 	}
 
 	private String encodeValue(String value) {
-		if (value == null) {
-			return "";
-		}
 		return URLEncoder.encode(value, StandardCharsets.UTF_8);
 	}
 }

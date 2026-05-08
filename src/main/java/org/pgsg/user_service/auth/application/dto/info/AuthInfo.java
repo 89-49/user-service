@@ -1,15 +1,11 @@
 package org.pgsg.user_service.auth.application.dto.info;
 
-import lombok.AllArgsConstructor;
-import lombok.Getter;
 import org.pgsg.config.security.token.TokenPair;
 
-@Getter
-@AllArgsConstructor
-public class AuthInfo {
-    private String accessToken;
-    private String refreshToken;
-
+public record AuthInfo(
+    String accessToken,
+    String refreshToken
+) {
     public static AuthInfo from(TokenPair tokenPair) {
         return new AuthInfo(tokenPair.getAccessToken(), tokenPair.getRefreshToken());
     }
