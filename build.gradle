@@ -30,7 +30,7 @@ repositories {
 
 dependencies {
 
-	implementation 'org.pgsg:common:0.2.7-SNAPSHOT'
+	implementation 'org.pgsg:common:0.2.8-SNAPSHOT'
 	implementation 'org.springframework.boot:spring-boot-starter-actuator'
 
 	// postgres - UUID 네이티브 타입 지원
