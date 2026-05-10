@@ -106,7 +106,7 @@ jobs:
 
   # main 브랜치 push 또는 수동 실행 시 VM에 배포 (CD)
   # GCP 프로젝트 및 VM 확정 후 include의 <VM_ZONE>에 회원 도메인을 배포할 AZ 기입 필수
-  # <VM_ZONE> 지정 예시: asia-northeast3-a
+  # GCP_ZONE은 실제 배포한 영역에 맞게 Github Variables에서 변경 필수
   deploy:
     needs: build-and-push
     if: github.ref == 'refs/heads/main' || github.event_name == 'workflow_dispatch'
@@ -122,7 +122,7 @@ jobs:
       matrix:
         include:
           - vm: user-service-1
-            zone: <VM_ZONE>
+            zone: ${{ vars.GCP_ZONE }}
     steps:
       # 저장소 코드 체크아웃
       - uses: actions/checkout@v4
