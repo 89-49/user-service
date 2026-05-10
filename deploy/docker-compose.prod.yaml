@@ -1,0 +1,17 @@
+services:
+  user-service:
+    container_name: user-service
+    image: ${AR_IMAGE_PATH}:${IMAGE_TAG}
+    restart: always
+    ports:
+      - "8081:8081"
+    env_file:
+      - .env
+    volumes:
+      - /opt/user-service/ssl:/app/ssl
+    networks:
+      - pgsg-network
+
+networks:
+  pgsg-network:
+    external: true
