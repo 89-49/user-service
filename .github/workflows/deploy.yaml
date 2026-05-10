@@ -2,7 +2,7 @@ name: Deploy User Service
 
 on:
   push:
-    branches: [ main, dev ]
+    branches: [ dev ]   # main 제거 (dev -> main merge 시 github action 수동 실행)
   workflow_dispatch:
     inputs:
       force_apply_retention_policy:
@@ -104,12 +104,11 @@ jobs:
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
-  # main 브랜치 push 또는 수동 실행 시 VM에 배포 (CD)
-  # GCP 프로젝트 및 VM 확정 후 include의 <VM_ZONE>에 회원 도메인을 배포할 AZ 기입 필수
-  # GCP_ZONE은 실제 배포한 영역에 맞게 Github Variables에서 변경 필수
+  # 수동 실행 시 VM에 배포 (CD)
+  # 실제 배포한 영역에 맞게 Github Variables에서 GCP_ZONE의 값 변경 필수
   deploy:
     needs: build-and-push
-    if: github.ref == 'refs/heads/main' || github.event_name == 'workflow_dispatch'
+    if: github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
     timeout-minutes: 15
     environment: production
@@ -279,9 +278,10 @@ jobs:
           exit 1
 
   # build-and-push, deploy 모두 성공 시 현재 이미지에 :stable 태그 부여
+  # (main 브랜치로 merge한 경우에만 :stable 태그 부여)
   promote-stable:
     needs: [ build-and-push, deploy ]
-    if: github.ref == 'refs/heads/main' || github.event_name == 'workflow_dispatch'
+    if: github.ref == 'refs/heads/main' && github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
     timeout-minutes: 5
     environment: production
