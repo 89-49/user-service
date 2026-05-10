@@ -187,6 +187,19 @@ jobs:
               sudo mv /tmp/docker-compose.prod.yaml $WORK_DIR/docker-compose.prod.yaml
               cd $WORK_DIR
 
+              test -f .env || { echo '.env not found in $WORK_DIR'; exit 1; }
+
+              if ! sudo docker network inspect pgsg-network > /dev/null 2>&1; then
+              echo 'pgsg-network not found. Creating...'
+              sudo docker network create pgsg-network
+              echo 'pgsg-network created.'
+              fi
+            
+              if ! sudo -E docker compose -f docker-compose.prod.yaml config > /dev/null 2>&1; then
+              echo 'Error: docker-compose.prod.yaml validation failed. Check the compose file.'
+              exit 1
+              fi
+
               export IMAGE_TAG='$NEW_TAG'
               export AR_IMAGE_PATH='${{ env.AR_IMAGE_PATH }}'
 
