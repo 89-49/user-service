@@ -252,8 +252,8 @@ jobs:
                 export IMAGE_TAG='$ROLLBACK_TAG'
                 export AR_IMAGE_PATH='${{ env.AR_IMAGE_PATH }}'
 
-                sudo env IMAGE_TAG="$NEW_TAG" AR_IMAGE_PATH="${{ env.AR_IMAGE_PATH }}" docker compose -f docker-compose.prod.yaml pull
-                sudo env IMAGE_TAG="$NEW_TAG" AR_IMAGE_PATH="${{ env.AR_IMAGE_PATH }}" docker compose -f docker-compose.prod.yaml up -d
+                sudo env IMAGE_TAG="$ROLLBACK_TAG" AR_IMAGE_PATH="${{ env.AR_IMAGE_PATH }}" docker compose -f docker-compose.prod.yaml pull
+                sudo env IMAGE_TAG="$ROLLBACK_TAG" AR_IMAGE_PATH="${{ env.AR_IMAGE_PATH }}" docker compose -f docker-compose.prod.yaml up -d
 
                 for i in \$(seq 1 18); do
                   if curl -sf http://localhost:8081/actuator/health \
