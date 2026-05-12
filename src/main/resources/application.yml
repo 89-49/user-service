@@ -19,14 +19,13 @@ spring:
   # [필수 2] 로컬 우선순위 설정
   # 로컬 .env나 환경변수가 원격 Config Server의 환경변수 값을 덮어쓰도록 허용합니다.
   cloud:
-    client:
-      hostname: ${HOSTNAME}
     config:
       allow-override: true
       override-none: true
       override-system-properties: false
       discovery:
         service-id: config-server
+#        enabled: true
 
 
   # [필수 3] 빈 중복 정의 허용
@@ -43,5 +42,16 @@ jwt:
 
 eureka:
   instance:
-    prefer-ip-address: true
-    instance-id: ${spring.cloud.client.hostname}:${spring.application.name}:${server.port}
+    prefer-ip-address: false
+    hostname: ${HOSTNAME:localhost}
+  client:
+    register-with-eureka: true
+    fetch-registry: true
+    service-url:
+      defaultZone: ${EUREKA_SERVER_URL:http://localhost:8761/eureka/}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: refresh,health,info,metrics,prometheus
