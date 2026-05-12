@@ -10,7 +10,7 @@ spring:
     include: error, user-error
 
   # [필수 1] 설정 로드 순서 (중요)
-  # .env를 먼저 읽어야 CONFIG_SERVER 주소를 확보하여 접속할 수 있습니다.(배포 환경)
+  # TODO: config-server의 유레카 서버 등록 완료 시 원격 config 서버를 직접 참조하는 부분 수정 필요
   config:
     import:
       - "optional:file:.env[.properties]"             # 1. 로컬 프로젝트의 환경변수 로드
@@ -25,6 +25,7 @@ spring:
       override-system-properties: false
       discovery:
         service-id: config-server
+        # TODO: config-server의 유레카 서버 등록 완료 시 아래 주석 해제
 #        enabled: true
 
 
