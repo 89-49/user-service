@@ -9,10 +9,11 @@ spring:
     active: dev, kafka
     include: error, user-error
 
+  # TODO: config-server의 유레카 서버 등록 시 optional:configserver 설정 수정
   config:
     import:
       - "optional:file:.env[.properties]"             # 1. 로컬 프로젝트의 환경변수 로드
-      - "optional:configserver:"                      # 2. 원격 설정 로드
+      - "optional:configserver:${CONFIG_SERVER:http://34.50.50.170:13100}"      # 2. 원격 설정 로드
 
   # [필수 2] 로컬 우선순위 설정
   # 로컬 .env나 환경변수가 원격 Config Server의 환경변수 값을 덮어쓰도록 허용합니다.
@@ -23,7 +24,8 @@ spring:
       override-system-properties: false
       discovery:
         service-id: config-server
-        enabled: true
+        # TODO: config-server의 유레카 서버 등록 시 아래 주석 해제
+#        enabled: true
 
 
   # [필수 3] 빈 중복 정의 허용
