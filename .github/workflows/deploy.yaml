@@ -42,13 +42,11 @@ jobs:
           service_account: ${{ secrets.GCP_SA_EMAIL }}
           project_id: ${{ vars.GCP_PROJECT_ID }}
 
-      - name: Check auth
-        run: |
-          cat $GOOGLE_APPLICATION_CREDENTIALS | python3 -c "import sys,json; print(json.load(sys.stdin)['client_email'])"
-
       # gcloud CLI 설치
       - name: Set up gcloud
         uses: google-github-actions/setup-gcloud@v2
+        with:
+          project_id: ${{ vars.GCP_PROJECT_ID }}
 
       # 커밋 SHA 7자리 태그 및 GAR 호스트명 추출
       - name: Resolve image metadata
