@@ -50,6 +50,7 @@ jobs:
           echo "registry_host=${REGISTRY_HOST}" >> "$GITHUB_OUTPUT"
 
       - name: Apply AR Image Retention Policy
+        continue-on-error: true
         if: |
           contains(toJSON(github.event.commits.*.modified), 'deploy/ar-image-retention-policy.json') ||
           contains(toJSON(github.event.commits.*.added), 'deploy/ar-image-retention-policy.json') ||
@@ -104,6 +105,8 @@ jobs:
     permissions:
       contents: read
       id-token: write
+    outputs:
+      deployed: ${{ steps.deploy_run.outcome == 'success' }}
     strategy:
       fail-fast: true
       max-parallel: 1
@@ -291,7 +294,8 @@ jobs:
     needs: [ build-and-push, deploy ]
     if: |
       (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/dev') &&
-      needs.deploy.result == 'success'
+      needs.deploy.result == 'success' &&
+      needs.deploy.outputs.deployed == 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 5
     environment: production
