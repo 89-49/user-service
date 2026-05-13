@@ -294,7 +294,8 @@ jobs:
   # (main 브랜치로 merge한 경우에만 :stable 태그 부여)
   promote-stable:
     needs: [ build-and-push, deploy ]
-    if: github.ref == 'refs/heads/main' && github.event_name == 'workflow_dispatch'
+    if: (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/dev') &&
+      needs.deploy.result == 'success'
     runs-on: ubuntu-latest
     timeout-minutes: 5
     environment: production
