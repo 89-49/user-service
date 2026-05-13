@@ -2,7 +2,7 @@ name: Deploy User Service
 
 on:
   push:
-    branches: [ dev ]   # main 제거 (dev -> main merge 시 github action 수동 실행)
+    branches: [ main, dev ]
   workflow_dispatch:
     inputs:
       force_apply_retention_policy:
@@ -18,7 +18,6 @@ env:
   HEALTH_INTERVAL: 10
 
 jobs:
-  # 이미지 빌드 후 GAR에 push (CI)
   build-and-push:
     runs-on: ubuntu-latest
     timeout-minutes: 20
@@ -29,10 +28,8 @@ jobs:
     outputs:
       image_tag: ${{ steps.meta.outputs.tag }}
     steps:
-      # 저장소 코드 체크아웃
       - uses: actions/checkout@v4
 
-      # WIF 인증으로 GCP access_token 발급
       - name: Authenticate to GCP
         id: auth
         uses: google-github-actions/auth@v2
@@ -42,18 +39,9 @@ jobs:
           service_account: ${{ secrets.GCP_SA_EMAIL }}
           project_id: ${{ vars.GCP_PROJECT_ID }}
 
-      # gcloud CLI 설치
       - name: Set up gcloud
         uses: google-github-actions/setup-gcloud@v2
-        with:
-          project_id: ${{ vars.GCP_PROJECT_ID }}
 
-      - name: Check auth
-        run: |
-          gcloud auth list --format="value(account)"
-          gcloud config get-value account
-
-      # 커밋 SHA 7자리 태그 및 GAR 호스트명 추출
       - name: Resolve image metadata
         id: meta
         run: |
@@ -61,14 +49,6 @@ jobs:
           REGISTRY_HOST=$(echo "$AR_IMAGE_PATH" | cut -d/ -f1)
           echo "registry_host=${REGISTRY_HOST}" >> "$GITHUB_OUTPUT"
 
-      - name: Debug condition
-        run: |
-          echo "modified: ${{ toJSON(github.event.commits.*.modified) }}"
-          echo "added: ${{ toJSON(github.event.commits.*.added) }}"
-          echo "event_name: ${{ github.event_name }}"
-          echo "force_apply: ${{ inputs.force_apply_retention_policy }}"      
-
-      # retention policy 파일 변경 시 또는 수동 force 옵션 시에만 GAR에 정책 적용
       - name: Apply AR Image Retention Policy
         if: |
           contains(toJSON(github.event.commits.*.modified), 'deploy/ar-image-retention-policy.json') ||
@@ -91,11 +71,9 @@ jobs:
             --quiet
           echo "Successfully synced retention policy from $POLICY_FILE"
 
-      # BuildKit 기반 빌드 엔진 활성화
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
-      # access_token으로 GAR에 Docker 로그인
       - name: Login to Artifact Registry
         uses: docker/login-action@v3
         with:
@@ -103,7 +81,6 @@ jobs:
           username: 'oauth2accesstoken'
           password: ${{ steps.auth.outputs.access_token }}
 
-      # Dockerfile로 이미지 빌드 후 SHA 태그, latest 태그로 GAR에 push
       - name: Build and push image
         uses: docker/build-push-action@v5
         with:
@@ -118,10 +95,8 @@ jobs:
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
-  # 수동 실행 시 VM에 배포 (CD)
-  # 실제 배포한 영역에 맞게 Github Variables에서 GCP_ZONE의 값 변경 필수
   deploy:
-    needs: build-and-push
+    needs: [ build-and-push ]
     if: github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
     timeout-minutes: 15
@@ -136,11 +111,10 @@ jobs:
         include:
           - vm: user-service-1
             zone: ${{ vars.GCP_ZONE }}
+
     steps:
-      # 저장소 코드 체크아웃
       - uses: actions/checkout@v4
 
-      # WIF 인증으로 GCP access_token 발급
       - name: Authenticate to GCP
         id: auth
         uses: google-github-actions/auth@v2
@@ -150,13 +124,23 @@ jobs:
           service_account: ${{ secrets.GCP_SA_EMAIL }}
           project_id: ${{ vars.GCP_PROJECT_ID }}
 
-      # gcloud CLI 설치
       - name: Set up gcloud
         uses: google-github-actions/setup-gcloud@v2
 
-      # 배포 실패 시 롤백할 :stable 태그 이미지 사전 확인
+      # TERMINATED 상태이면 이후 모든 step 스킵
+      - name: Check VM status
+        id: vm-status
+        run: |
+          STATUS=$(gcloud compute instances describe ${{ matrix.vm }} \
+            --zone="${{ matrix.zone }}" \
+            --project="$GCP_PROJECT" \
+            --format="value(status)" 2>/dev/null || echo "NOT_FOUND")
+          echo "status=$STATUS" >> "$GITHUB_OUTPUT"
+          echo "${{ matrix.vm }} → $STATUS"
+
       - name: Resolve rollback target
         id: rollback
+        if: steps.vm-status.outputs.status == 'RUNNING'
         run: |
           STABLE=$(gcloud artifacts docker tags list "$AR_IMAGE_PATH" \
             --project="$GCP_PROJECT" \
@@ -170,8 +154,8 @@ jobs:
             echo "No stable tag yet — first deploy. Rollback will be skipped."
           fi
 
-      # docker-compose.prod.yaml을 VM의 /tmp로 전송
       - name: Sync compose file to ${{ matrix.vm }}
+        if: steps.vm-status.outputs.status == 'RUNNING'
         run: |
           gcloud compute scp deploy/docker-compose.prod.yaml \
             ${{ matrix.vm }}:/tmp/docker-compose.prod.yaml \
@@ -179,9 +163,9 @@ jobs:
             --project="$GCP_PROJECT" \
             --tunnel-through-iap
 
-      # VM에 SSH 접속 후 새 이미지 pull 및 컨테이너 재시작, actuator 헬스체크
       - name: Deploy and verify on ${{ matrix.vm }}
         id: deploy_run
+        if: steps.vm-status.outputs.status == 'RUNNING'
         env:
           NEW_TAG: ${{ needs.build-and-push.outputs.image_tag }}
           AR_TOKEN: ${{ steps.auth.outputs.access_token }}
@@ -200,25 +184,25 @@ jobs:
               sudo mkdir -p $WORK_DIR
               sudo mv /tmp/docker-compose.prod.yaml $WORK_DIR/docker-compose.prod.yaml
               cd $WORK_DIR
-
+          
               test -f .env || { echo '.env not found in $WORK_DIR'; exit 1; }
-
+          
               if ! sudo docker network inspect pgsg-network > /dev/null 2>&1; then
-              echo 'pgsg-network not found. Creating...'
-              sudo docker network create pgsg-network
-              echo 'pgsg-network created.'
+                echo 'pgsg-network not found. Creating...'
+                sudo docker network create pgsg-network
+                echo 'pgsg-network created.'
               fi
-            
+          
               if ! sudo -E docker compose -f docker-compose.prod.yaml config > /dev/null 2>&1; then
-              echo 'Error: docker-compose.prod.yaml validation failed. Check the compose file.'
-              exit 1
+                echo 'Error: docker-compose.prod.yaml validation failed. Check the compose file.'
+                exit 1
               fi
 
               export IMAGE_TAG='$NEW_TAG'
               export AR_IMAGE_PATH='${{ env.AR_IMAGE_PATH }}'
 
-              sudo env IMAGE_TAG="$NEW_TAG" AR_IMAGE_PATH="${{ env.AR_IMAGE_PATH }}" docker compose -f docker-compose.prod.yaml pull
-              sudo env IMAGE_TAG="$NEW_TAG" AR_IMAGE_PATH="${{ env.AR_IMAGE_PATH }}" docker compose -f docker-compose.prod.yaml up -d
+              sudo env IMAGE_TAG=\"$NEW_TAG\" AR_IMAGE_PATH=\"${{ env.AR_IMAGE_PATH }}\" docker compose -f docker-compose.prod.yaml pull
+              sudo env IMAGE_TAG=\"$NEW_TAG\" AR_IMAGE_PATH=\"${{ env.AR_IMAGE_PATH }}\" docker compose -f docker-compose.prod.yaml up -d
 
               echo 'Checking actuator health (max $HEALTH_RETRIES x ${HEALTH_INTERVAL}s)...'
               HEALTHY=0
@@ -239,7 +223,6 @@ jobs:
               fi
             "
 
-      # 배포 실패 시 :stable 이미지로 최대 3회 롤백 시도
       - name: Rollback ${{ matrix.vm }}
         if: failure() && steps.deploy_run.conclusion == 'failure' && steps.rollback.outputs.tag != ''
         env:
@@ -266,8 +249,8 @@ jobs:
                 export IMAGE_TAG='$ROLLBACK_TAG'
                 export AR_IMAGE_PATH='${{ env.AR_IMAGE_PATH }}'
 
-                sudo env IMAGE_TAG="$ROLLBACK_TAG" AR_IMAGE_PATH="${{ env.AR_IMAGE_PATH }}" docker compose -f docker-compose.prod.yaml pull
-                sudo env IMAGE_TAG="$ROLLBACK_TAG" AR_IMAGE_PATH="${{ env.AR_IMAGE_PATH }}" docker compose -f docker-compose.prod.yaml up -d
+                sudo env IMAGE_TAG=\"$ROLLBACK_TAG\" AR_IMAGE_PATH=\"${{ env.AR_IMAGE_PATH }}\" docker compose -f docker-compose.prod.yaml pull
+                sudo env IMAGE_TAG=\"$ROLLBACK_TAG\" AR_IMAGE_PATH=\"${{ env.AR_IMAGE_PATH }}\" docker compose -f docker-compose.prod.yaml up -d
 
                 for i in \$(seq 1 18); do
                   if curl -sf http://localhost:8081/actuator/health \
@@ -304,11 +287,10 @@ jobs:
           echo "::error::All rollback attempts failed on ${{ matrix.vm }}. Manual intervention required."
           exit 1
 
-  # build-and-push, deploy 모두 성공 시 현재 이미지에 :stable 태그 부여
-  # (main 브랜치로 merge한 경우에만 :stable 태그 부여)
   promote-stable:
     needs: [ build-and-push, deploy ]
-    if: (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/dev') &&
+    if: |
+      (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/dev') &&
       needs.deploy.result == 'success'
     runs-on: ubuntu-latest
     timeout-minutes: 5
@@ -317,7 +299,6 @@ jobs:
       contents: read
       id-token: write
     steps:
-      # WIF 인증으로 GCP access_token 발급
       - name: Authenticate to GCP
         uses: google-github-actions/auth@v2
         with:
@@ -325,11 +306,9 @@ jobs:
           service_account: ${{ secrets.GCP_SA_EMAIL }}
           project_id: ${{ vars.GCP_PROJECT_ID }}
 
-      # gcloud CLI 설치
       - name: Set up gcloud
         uses: google-github-actions/setup-gcloud@v2
 
-      # 현재 SHA 이미지에 :stable 태그 추가 (다음 배포 실패 시 롤백 대상)
       - name: Promote new SHA to :stable tag
         run: |
           NEW_TAG="${{ needs.build-and-push.outputs.image_tag }}"
