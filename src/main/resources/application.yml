@@ -46,7 +46,7 @@ management:
 
 eureka:
   instance:
-    prefer-ip-address: false
+    prefer-ip-address: true
     hostname: ${HOSTNAME:localhost}
   client:
     register-with-eureka: true
