@@ -46,6 +46,7 @@ jobs:
         run: |
           gcloud auth list
           gcloud config get-value account
+          echo "SA Email: ${{ secrets.GCP_SA_EMAIL }}"
 
       # gcloud CLI 설치
       - name: Set up gcloud
