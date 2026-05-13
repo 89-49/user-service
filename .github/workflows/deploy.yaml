@@ -61,6 +61,13 @@ jobs:
           REGISTRY_HOST=$(echo "$AR_IMAGE_PATH" | cut -d/ -f1)
           echo "registry_host=${REGISTRY_HOST}" >> "$GITHUB_OUTPUT"
 
+      - name: Debug condition
+        run: |
+          echo "modified: ${{ toJSON(github.event.commits.*.modified) }}"
+          echo "added: ${{ toJSON(github.event.commits.*.added) }}"
+          echo "event_name: ${{ github.event_name }}"
+          echo "force_apply: ${{ inputs.force_apply_retention_policy }}"      
+
       # retention policy 파일 변경 시 또는 수동 force 옵션 시에만 GAR에 정책 적용
       - name: Apply AR Image Retention Policy
         if: |
