@@ -48,6 +48,11 @@ jobs:
         with:
           project_id: ${{ vars.GCP_PROJECT_ID }}
 
+      - name: Check auth
+        run: |
+          gcloud auth list --format="value(account)"
+          gcloud config get-value account
+
       # 커밋 SHA 7자리 태그 및 GAR 호스트명 추출
       - name: Resolve image metadata
         id: meta
