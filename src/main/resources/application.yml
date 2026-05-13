@@ -1,5 +1,5 @@
 server:
-  port: ${SERVER_PORT:18099}
+  port: ${SERVER_PORT:8081}
 
 spring:
   application:
@@ -9,12 +9,10 @@ spring:
     active: dev, kafka
     include: error, user-error
 
-  # [필수 1] 설정 로드 순서 (중요)
-  # TODO: config-server의 유레카 서버 등록 완료 시 원격 config 서버를 직접 참조하는 부분 수정 필요
   config:
     import:
       - "optional:file:.env[.properties]"             # 1. 로컬 프로젝트의 환경변수 로드
-      - "optional:configserver:${CONFIG_SERVER:http://34.50.50.170:13100}"      # 2. 원격 설정 로드
+      - "optional:configserver:"      # 2. 원격 설정 로드
 
   # [필수 2] 로컬 우선순위 설정
   # 로컬 .env나 환경변수가 원격 Config Server의 환경변수 값을 덮어쓰도록 허용합니다.
@@ -25,8 +23,7 @@ spring:
       override-system-properties: false
       discovery:
         service-id: config-server
-        # TODO: config-server의 유레카 서버 등록 완료 시 아래 주석 해제
-#        enabled: true
+        enabled: true
 
 
   # [필수 3] 빈 중복 정의 허용
@@ -41,6 +38,12 @@ jwt:
   access-token-expiration: ${JWT_ACCESS_EXPIRATION:1800000}
   refresh-token-expiration: ${JWT_REFRESH_EXPIRATION:604800000}
 
+management:
+  endpoints:
+    web:
+      exposure:
+        include: refresh,health,info,metrics,prometheus
+
 eureka:
   instance:
     prefer-ip-address: false
@@ -50,9 +53,3 @@ eureka:
     fetch-registry: true
     service-url:
       defaultZone: ${EUREKA_SERVER_URL:http://localhost:8761/eureka/}
-
-management:
-  endpoints:
-    web:
-      exposure:
-        include: refresh,health,info,metrics,prometheus
