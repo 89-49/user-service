@@ -42,6 +42,11 @@ jobs:
           service_account: ${{ secrets.GCP_SA_EMAIL }}
           project_id: ${{ vars.GCP_PROJECT_ID }}
 
+      - name: Check service account
+        run: |
+          gcloud auth list
+          gcloud config get-value account
+
       # gcloud CLI 설치
       - name: Set up gcloud
         uses: google-github-actions/setup-gcloud@v2
