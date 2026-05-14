@@ -262,13 +262,13 @@ jobs:
                 sudo env IMAGE_TAG=\"$ROLLBACK_TAG\" AR_IMAGE_PATH=\"${{ env.AR_IMAGE_PATH }}\" docker compose -f docker-compose.prod.yaml pull
                 sudo env IMAGE_TAG=\"$ROLLBACK_TAG\" AR_IMAGE_PATH=\"${{ env.AR_IMAGE_PATH }}\" docker compose -f docker-compose.prod.yaml up -d
 
-                for i in \$(seq 1 18); do
+                for i in \$(seq 1 $HEALTH_RETRIES); do
                   if curl -sf http://localhost:8081/actuator/health \
                       | grep -q '\"status\":\"UP\"'; then
                     echo \"Rollback container UP (attempt \$i)\"
                     exit 0
                   fi
-                  sleep 10
+                  sleep $HEALTH_INTERVAL
                 done
 
                 echo 'Rollback container did not become healthy.'

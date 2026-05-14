@@ -19,7 +19,7 @@ services:
     volumes:
       - /opt/user-service/promtail-config.yml:/etc/promtail/config.yml
       - /opt/user-service/logs:/logs
-    command: run --config.format=promtail /etc/promtail/config.yml
+    command: -config.file=/etc/promtail/config.yml
     networks:
       - pgsg-network
 
