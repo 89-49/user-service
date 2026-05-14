@@ -15,7 +15,7 @@ env:
   AR_IMAGE_PATH: ${{ vars.AR_IMAGE_PATH }}
   WORK_DIR: /opt/user-service
   HEALTH_RETRIES: 30
-  HEALTH_INTERVAL: 10
+  HEALTH_INTERVAL: 5
 
 jobs:
   build-and-push:
@@ -165,6 +165,12 @@ jobs:
             --zone="${{ matrix.zone }}" \
             --project="$GCP_PROJECT" \
             --tunnel-through-iap
+          
+          gcloud compute scp deploy/promtail-config.yml \
+            ${{ matrix.vm }}:/tmp/promtail-config.yml \
+            --zone="${{ matrix.zone }}" \
+            --project="$GCP_PROJECT" \
+            --tunnel-through-iap
 
       - name: Deploy and verify on ${{ matrix.vm }}
         id: deploy_run
@@ -186,6 +192,7 @@ jobs:
 
               sudo mkdir -p $WORK_DIR
               sudo mv /tmp/docker-compose.prod.yaml $WORK_DIR/docker-compose.prod.yaml
+              sudo mv /tmp/promtail-config.yml $WORK_DIR/promtail-config.yml
               cd $WORK_DIR
           
               test -f .env || { echo '.env not found in $WORK_DIR'; exit 1; }
@@ -255,13 +262,13 @@ jobs:
                 sudo env IMAGE_TAG=\"$ROLLBACK_TAG\" AR_IMAGE_PATH=\"${{ env.AR_IMAGE_PATH }}\" docker compose -f docker-compose.prod.yaml pull
                 sudo env IMAGE_TAG=\"$ROLLBACK_TAG\" AR_IMAGE_PATH=\"${{ env.AR_IMAGE_PATH }}\" docker compose -f docker-compose.prod.yaml up -d
 
-                for i in \$(seq 1 18); do
+                for i in \$(seq 1 $HEALTH_RETRIES); do
                   if curl -sf http://localhost:8081/actuator/health \
                       | grep -q '\"status\":\"UP\"'; then
                     echo \"Rollback container UP (attempt \$i)\"
                     exit 0
                   fi
-                  sleep 10
+                  sleep $HEALTH_INTERVAL
                 done
 
                 echo 'Rollback container did not become healthy.'

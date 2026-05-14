@@ -43,7 +43,7 @@ public class UserSecurityConfig implements SecurityConfig {
                         .requestMatchers("/api/v1/auth/login", "/api/v1/auth/signup", "/api/v1/auth/reissue").permitAll()
                         .requestMatchers("/internal/v1/**").permitAll()
                         .requestMatchers("/favicon.ico", "/error").permitAll()
-                        .requestMatchers("/actuator/health", "/actuator/info").permitAll()
+                        .requestMatchers("/actuator/**").permitAll()
                         .anyRequest().authenticated()
                 )
                 // LoginFilter는 회원 아이디, 비밀번호 검증 이전에 먼저 실행 -> 이미 SecurityContext에 등록된 사용자 정보가 있으면 자동 통과
