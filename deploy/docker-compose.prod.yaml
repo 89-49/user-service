@@ -9,6 +9,7 @@ services:
       - .env
     volumes:
       - /opt/user-service/ssl:/app/ssl
+      - /opt/user-service/logs:/logs
     networks:
       - pgsg-network
 
@@ -19,7 +20,9 @@ services:
     volumes:
       - /opt/user-service/promtail-config.yml:/etc/promtail/config.yml
       - /opt/user-service/logs:/logs
-    command: -config.file=/etc/promtail/config.yml
+    command: -config.file=/etc/promtail/config.yml -config.expand-env=true
+    env_file:
+      - .env
     networks:
       - pgsg-network
 
