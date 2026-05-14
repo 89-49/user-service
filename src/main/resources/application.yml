@@ -38,12 +38,6 @@ jwt:
   access-token-expiration: ${JWT_ACCESS_EXPIRATION:1800000}
   refresh-token-expiration: ${JWT_REFRESH_EXPIRATION:604800000}
 
-management:
-  endpoints:
-    web:
-      exposure:
-        include: refresh,health,info,metrics,prometheus
-
 eureka:
   instance:
     prefer-ip-address: true
