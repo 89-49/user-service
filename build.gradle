@@ -30,8 +30,9 @@ repositories {
 
 dependencies {
 
-	implementation 'org.pgsg:common:0.2.10-SNAPSHOT'
+	implementation 'org.pgsg:common:0.3.2-SNAPSHOT'
 	implementation 'org.springframework.boot:spring-boot-starter-actuator'
+	implementation 'io.micrometer:micrometer-registry-prometheus'
 
 	// postgres - UUID 네이티브 타입 지원
 	runtimeOnly 'org.postgresql:postgresql'
