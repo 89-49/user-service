@@ -12,6 +12,17 @@ services:
     networks:
       - pgsg-network
 
+  promtail:
+    image: grafana/promtail:2.9.1
+    container_name: user-service-promtail
+    restart: always
+    volumes:
+      - /opt/user-service/promtail-config.yml:/etc/promtail/config.yml
+      - /opt/user-service/logs:/logs
+    command: run --config.format=promtail /etc/promtail/config.yml
+    networks:
+      - pgsg-network
+
 networks:
   pgsg-network:
     external: true
