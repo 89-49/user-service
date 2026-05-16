@@ -6,7 +6,6 @@ build/
 !**/src/test/**/build/
 .env
 **/kafka.server.truststore.jks
-**/csv/
 
 ### STS ###
 .apt_generated
