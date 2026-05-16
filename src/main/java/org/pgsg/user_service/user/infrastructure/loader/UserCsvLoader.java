@@ -7,7 +7,7 @@ import org.springframework.transaction.annotation.Transactional;
 @Component
 public class UserCsvLoader extends AbstractCsvLoader {
 
-	private static final String CHECK_SQL = "SELECT COUNT(*) FROM p_user LIMIT 1";
+	private static final String CHECK_SQL = "SELECT CASE WHEN COUNT(*) >= 10000 THEN 1 ELSE 0 END FROM p_user";
 	private static final String CSV_PATH = "csv/p_user.csv";
 	private static final String INSERT_SQL = "INSERT INTO p_user (user_id, username, password, user_role, name, nickname, created_by, created_at, modified_by, modified_at, deleted_by, deleted_at) " +
 			"VALUES (CAST(? AS UUID), ?, ?, ?, ?, ?, CAST(? AS UUID), CAST(? AS TIMESTAMP), CAST(? AS UUID), CAST(? AS TIMESTAMP), CAST(? AS UUID), CAST(? AS TIMESTAMP)) " +
