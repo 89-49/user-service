@@ -19,6 +19,9 @@ jobs:
   scale:
     runs-on: ubuntu-latest
     timeout-minutes: 15
+    concurrency:
+      group: scale-user-service
+      cancel-in-progress: true
     permissions:
       contents: read
       id-token: write

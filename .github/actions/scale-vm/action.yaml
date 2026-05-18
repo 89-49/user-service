@@ -34,13 +34,15 @@ runs:
           VM="${ENTRY%%:*}"
           ZONE="${ENTRY##*:}"
 
-          CURRENT=$(gcloud compute instances describe "$VM" \
+          if ! CURRENT=$(gcloud compute instances describe "$VM" \
             --zone="$ZONE" \
             --project="${{ inputs.gcp_project }}" \
-            --format="value(status)" 2>/dev/null || echo "NOT_FOUND")
-
-          if [ "$CURRENT" = "NOT_FOUND" ]; then
-            echo "::error::$VM ($ZONE) 을 찾을 수 없습니다 — VM을 먼저 생성해 주세요"
+            --format="value(status)" 2>err.log); then
+            if grep -qi "was not found" err.log; then
+              echo "::error::$VM ($ZONE) 을 찾을 수 없습니다 — VM을 먼저 생성해 주세요"
+            else
+              echo "::error::Failed to describe $VM ($ZONE): $(tr '\n' ' ' < err.log)"
+            fi
             exit 1
           fi
 

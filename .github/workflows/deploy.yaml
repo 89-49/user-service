@@ -115,7 +115,7 @@ jobs:
           - vm: user-service-1
             zone: ${{ vars.GCP_ZONE }}
           - vm: user-service-2
-            zone: ${{ vars.GCP_ZONE }}
+            zone: asia-northeast3-a
 
     steps:
       - uses: actions/checkout@v4
