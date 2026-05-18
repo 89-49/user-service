@@ -114,6 +114,8 @@ jobs:
         include:
           - vm: user-service-1
             zone: ${{ vars.GCP_ZONE }}
+          - vm: user-service-2
+            zone: ${{ vars.GCP_ZONE }}
 
     steps:
       - uses: actions/checkout@v4
