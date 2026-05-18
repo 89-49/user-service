@@ -1,0 +1,46 @@
+name: Scale User Service
+
+on:
+  workflow_dispatch:
+    inputs:
+      direction:
+        description: "'out' = user-service-2 기동 | 'in' = user-service-2 중지"
+        type: choice
+        options:
+          - out
+          - in
+        required: true
+
+env:
+  GCP_PROJECT: ${{ vars.GCP_PROJECT_ID }}
+  SCALE_TARGETS: "user-service-2:asia-northeast3-a"
+
+jobs:
+  scale:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    concurrency:
+      group: scale-user-service
+      cancel-in-progress: true
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Authenticate to GCP
+        uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: ${{ secrets.WIF_PROVIDER }}
+          service_account: ${{ secrets.GCP_SA_EMAIL }}
+          project_id: ${{ vars.GCP_PROJECT_ID }}
+
+      - name: Set up gcloud
+        uses: google-github-actions/setup-gcloud@v2
+
+      - name: Scale ${{ inputs.direction }}
+        uses: ./.github/actions/scale-vm
+        with:
+          direction: ${{ inputs.direction }}
+          targets: ${{ env.SCALE_TARGETS }}
+          gcp_project: ${{ env.GCP_PROJECT }}
