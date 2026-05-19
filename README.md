@@ -244,6 +244,7 @@ docker compose up -d --build
 ## 📮 주요 API 가이드
 
 ### 1. 인증 및 권한 관련 (Auth API)
+
 | 기능 | 메서드 | 경로 | 권한 | 설명 |
 | :--- | :---: | :--- | :--- | :--- |
 | **로그인** | `POST` | `/api/v1/auth/login` | 누구나 | 사용자 인증 및 토큰 쌍(Access/Refresh) 발급 |
@@ -252,6 +253,7 @@ docker compose up -d --build
 | **토큰 재발급** | `POST` | `/api/v1/auth/reissue` | 누구나 | Refresh Token을 이용한 Access Token 갱신 |
 
 ### 2. 회원 정보 관리 (User API)
+
 | 기능 | 메서드 | 경로 | 권한 | 설명 |
 | :--- | :---: | :--- | :--- | :--- |
 | **내 정보 조회** | `GET` | `/api/v1/users/me` | 인증 사용자 | 현재 로그인된 사용자의 상세 프로필 조회 |
@@ -262,6 +264,7 @@ docker compose up -d --build
 | **회원 탈퇴/삭제** | `DELETE` | `/api/v1/users/{userId}` | 인증/관리자 | 회원 계정 삭제 (Soft Delete) |
 
 ### 3. 서비스 간 통신용 (Internal API)
+
 | 기능 | 메서드 | 경로 | 설명 |
 | :--- | :---: | :--- | :--- |
 | **토큰 검증** | `POST` | `/internal/v1/auth/verify` | 게이트웨이 등에서 토큰 유효성 및 블랙리스트 여부 확인 |
@@ -273,8 +276,6 @@ docker compose up -d --build
 
 ## 📈 모니터링 및 관리
 - **Actuator**: `/actuator/health`, `/actuator/info`, `/actuator/prometheus`를 통해 실시간 상태 및 메트릭 확인 가능.
-- **Tracing**: Zipkin을 연동하여 서비스 간 요청 흐름을 추적하며, Micrometer를 통해 트레이싱 데이터를 수집합니다.
-- **Log 수집 (Loki/Promtail)**: 운영 서버의 로그를 Promtail이 실시간으로 수집하여 Loki 서버로 전송합니다. Grafana 대시보드를 통해 통합 로그 조회가 가능합니다.
-- **분산 추적**: MDC 필터를 적용하여 로그에 Trace ID를 포함함으로써 분산 환경에서의 상관관계 분석을 지원합니다.
-적하며, Micrometer를 통해 트레이싱 데이터를 수집합니다.
-- **Log 관리**: MDC 필터를 적용하여 로그에 Trace ID를 포함함으로써 분산 환경에서의 디버깅을 지원합니다.
+- **Tracing**: Micrometer를 통해 트레이싱 데이터를 수집하고 Zipkin과 연동하여 서비스 간 요청 흐름을 추적합니다.
+- **Log 수집 (Loki/Promtail)**: 운영 서버의 로그를 Promtail이 실시간으로 수집하여 Loki 서버로 전송하며, Grafana를 통해 통합 조회가 가능합니다.
+- **분산 로그 관리**: MDC 필터를 적용하여 로그에 Trace ID를 포함함으로써 분산 환경에서의 디버깅과 상관관계 분석을 지원합니다.
