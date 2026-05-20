@@ -43,12 +43,17 @@ public class RedisTokenRepository implements TokenRepository {
 
     @Override
     public void saveBlacklist(UUID userId, String accessToken, Duration duration) {
-        redisTemplate.opsForValue().set(BL_PREFIX + userId, accessToken, duration);
+        String key = getBlacklistKey(userId, accessToken);
+        redisTemplate.opsForValue().set(key, accessToken, duration);
     }
 
     @Override
     public boolean existsByBlacklist(UUID userId, String accessToken) {
-        String blacklistedToken = redisTemplate.opsForValue().get(BL_PREFIX + userId);
-        return accessToken.equals(blacklistedToken);
+        String key = getBlacklistKey(userId, accessToken);
+        return Boolean.TRUE.equals(redisTemplate.hasKey(key));
+    }
+
+    private String getBlacklistKey(UUID userId, String accessToken) {
+        return BL_PREFIX + userId + ":" + accessToken;
     }
 }
