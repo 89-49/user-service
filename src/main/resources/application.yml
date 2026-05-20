@@ -1,0 +1,60 @@
+server:
+  port: ${SERVER_PORT:8081}
+
+spring:
+  application:
+    name: user-service
+
+  profiles:
+    active: dev, kafka
+    include: error, user-error
+
+  config:
+    import:
+      - "optional:file:.env[.properties]"             # 1. 로컬 프로젝트의 환경변수 로드
+      - "optional:configserver:"      # 2. 원격 설정 로드
+
+  # [필수 2] 로컬 우선순위 설정
+  # 로컬 .env나 환경변수가 원격 Config Server의 환경변수 값을 덮어쓰도록 허용합니다.
+  cloud:
+    config:
+      allow-override: true
+      override-none: true
+      override-system-properties: false
+      discovery:
+        service-id: config-server
+        enabled: true
+
+
+  # [필수 3] 빈 중복 정의 허용
+  # Security 및 Config 클래스 간의 빈 충돌을 방지합니다.
+  main:
+    allow-bean-definition-overriding: true
+
+# [필수 4] 보안 설정
+# JWT 관련 값은 보안상 로컬 .env에서 관리하는 것이 가장 안전합니다.
+jwt:
+  secret: ${JWT_SECRET}
+  access-token-expiration: ${JWT_ACCESS_EXPIRATION:1800000}
+  refresh-token-expiration: ${JWT_REFRESH_EXPIRATION:604800000}
+
+eureka:
+  instance:
+    prefer-ip-address: true
+    ip-address: ${HOSTNAME:localhost}
+    hostname: ${HOSTNAME:localhost}
+    instance-id: "${HOSTNAME:${spring.application.name}}:${spring.application.name}:${server.port}"
+  client:
+    register-with-eureka: true
+    fetch-registry: true
+    service-url:
+      defaultZone: ${EUREKA_SERVER_URL:http://localhost:8761/eureka/}
+
+
+management:
+  tracing:
+    sampling:
+      probability: 0.1
+  zipkin:
+    tracing:
+      endpoint: ${ZIPKIN_ENDPOINT:http://localhost:9411/api/v2/spans}

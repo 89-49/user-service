@@ -1,0 +1,146 @@
+error:
+  configs:
+    # 회원가입 정보 유효성
+    "[user.validation.user-info-id.required]":
+      code: "U001"
+      message: "아이디는 필수 입력 값입니다."
+      status: 400
+
+    "[user.validation.user-info-id.invalid-format]":
+      code: "U002"
+      message: "아이디는 최소 8글자, 최대 12글자의 영문 대/소문자, 숫자만 허용합니다."
+      status: 400
+
+    "[user.validation.user-info-password.required]":
+      code: "U003"
+      message: "비밀번호는 필수 입력 값입니다."
+      status: 400
+
+    "[user.validation.user-info-password.invalid-pattern]":
+      code: "U004"
+      message: "비밀번호는 최소 8글자, 최대 20글자의 영문 대/소문자, 숫자, 특수문자만 허용합니다."
+      status: 400
+
+    "[user.validation.user-info-role.required]":
+      code: "U005"
+      message: "권한 정보는 필수 입력 값입니다."
+      status: 400
+
+    "[user.validation.user-info-role.invalid-pattern]":
+      code: "U006"
+      message: "올바른 권한 형식이 아닙니다."
+      status: 400
+
+    "[user.validation.user-info-name.required]":
+      code: "U007"
+      message: "이름은 필수 입력 값입니다."
+      status: 400
+
+    "[user.validation.user-info-name.invalid-pattern]":
+      code: "U008"
+      message: "이름은 최대 20자까지, 한글과 영문만 허용합니다."
+      status: 400
+
+    "[user.validation.user-info-nickname.required]":
+      code: "U009"
+      message: "닉네임은 필수 입력 값입니다."
+      status: 400
+
+    "[user.validation.user-info-nickname.invalid-pattern]":
+      code: "U010"
+      message: "닉네임은 최대 20자까지, 한글, 영문, 숫자만 허용합니다."
+      status: 400
+
+    # 채팅 가능 시간 유효성
+    "[user.validation.user-info-chat-time.range-required]":
+      code: "U011"
+      message: "채팅 가능 시간은 최소 하나 이상 등록해야 합니다."
+      status: 400
+
+    "[user.validation.user-info-chat-time.day-of-week-required]":
+      code: "U012"
+      message: "채팅 가능 요일 정보는 필수입니다."
+      status: 400
+
+    "[user.validation.user-info-chat-time.start-time-required]":
+      code: "U013"
+      message: "채팅 시작 시간 정보는 필수입니다."
+      status: 400
+
+    "[user.validation.user-info-chat-time.end-time-required]":
+      code: "U014"
+      message: "채팅 종료 시간 정보는 필수입니다."
+      status: 400
+
+
+    #
+    "[user.exception.access-denied.read-user-info]":
+      code: "U015"
+      message: "해당 리소스에 접근할 관리자 권한이 없습니다."
+      status: 403
+
+    "[user.exception.access-denied.manager-assignment]":
+      code: "U016"
+      message: "관리자를 등록할 권한이 없습니다."
+      status: 403
+
+    "[user.exception.not-found.user]":
+      code: "U017"
+      message: "해당 회원을 찾을 수 없습니다."
+      status: 404
+
+    "[user.exception.conflict.duplicate-user]":
+      code: "U018"
+      message: "이미 등록된 회원입니다."
+      status: 409
+
+    "[user.exception.not-found.user-role]":
+      code: "U019"
+      message: "해당하는 회원권한을 찾을 수 없습니다."
+      status: 404
+
+    "[user.exception.unauthorized.invalid-user]":
+      code: "U020"
+      message: "인증되지 않은 사용자입니다."
+      status: 401
+
+    # 토큰 재발급 정보 유효성
+    "[user.validation.reissue.access-token-required]":
+      code: "U021"
+      message: "액세스 토큰은 필수 입력 값입니다."
+      status: 400
+
+    "[user.validation.reissue.refresh-token-required]":
+      code: "U022"
+      message: "리프레시 토큰은 필수 입력 값입니다."
+      status: 400
+
+    "[user.exception.internal-error.save-user-failure]":
+      code: "U023"
+      message: "회원정보 등록에 실패했습니다."
+      status: 500
+
+    "[user.exception.access-denied.user-update]":
+      code: "U024"
+      message: "회원정보를 수정할 권한이 없습니다."
+      status: 403
+
+    "[user.validation.user-info-chat-time.invalid-range]":
+      code: "U025"
+      message: "시작 시간은 종료 시간보다 빨라야 합니다."
+      status: 400
+
+    "[user.exception.conflict.duplicate-chat-time]":
+      code: "U026"
+      message: "이미 등록했던 채팅 가능 시간대입니다."
+      status: 409
+
+    "[user.validation.chat-availability.chat-date-required]":
+      code: "U027"
+      message: "회원의 채팅 가능 여부를 조회할 날짜 정보는 필수입니다."
+      status: 400
+
+    "[user.validation.chat-availability.chat-time-required]":
+      code: "U028"
+      message: "회원의 채팅 가능 여부를 조회할 시간 정보는 필수입니다."
+      status: 400

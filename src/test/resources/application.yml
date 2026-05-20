@@ -1,0 +1,42 @@
+spring:
+  application:
+    name: user-service
+  profiles:
+    active: test
+    include: error, user-error
+  config:
+    import:
+      - optional:file:.env[.properties]
+      - optional:configserver:${CONFIG_SERVER}
+
+  main:
+    allow-bean-definition-overriding: true
+
+  cloud:
+    config:
+      fail-fast: false
+
+  datasource:
+    url: jdbc:h2:mem:test;MODE=PostgreSQL;DATABASE_TO_LOWER=TRUE;DEFAULT_NULL_ORDERING=HIGH
+
+  sql:
+    init:
+      # 테스트 시 data-test.sql의 데이터가 필요할 경우 data-locations의 주석을 해제
+      # data-locations: classpath:data-test.sql
+      mode: never # data-test.sql의 설정이 불필요할 시 (data-test.sql 사용 시 이 부분은 주석처리)
+
+  jpa:
+    # configs에 포함된 설정이나, 초기 배포 시 설정 변경의 편의를 위해 환경변수를 사용
+    # (.env 파일 내부의 값만 변경하면 됨)
+    hibernate:
+      ddl-auto: create-drop
+
+# 테스트 환경에서는 eureka 서버와의 연동 없이 테스트 진행
+eureka:
+  client:
+    enabled: false
+
+jwt:
+  secret: ${JWT_SECRET:test-jwt-secret-for-local-ci-only-32bytes-min}
+  access-token-expiration: ${JWT_ACCESS_EXPIRATION:3600000}
+  refresh-token-expiration: ${JWT_REFRESH_EXPIRATION:604800000}
